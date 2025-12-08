@@ -1,27 +1,27 @@
 const CACHE_NAME = 'narvaez-cache-v1';
 const urlsToCache = [
-  '/front/',
-  '/front/index.html',
-  '/front/pages/homeRepartidor.html',
-  '/front/pages/dasboardAdmin.html',
-  '/front/pages/loginAdmin.html',
-  '/front/pages/loginRepartidor.html',
-  '/front/pages/pedidos.html',
-  '/front/pages/pedidosPendientes.html',
-  '/front/pages/gestionPedidos.html',
-  '/front/pages/gestionProductos.html',
-  '/front/pages/gestionTiendas.html',
-  '/front/pages/gestionRepartidores.html',
-  '/front/pages/detalleTienda.html',
-  '/front/pages/perfil.html',
-  '/front/pages/registroVisita.html',
-  '/front/pages/visitasTemporal.html',
-  '/front/pages/confirmacionPedido.html',
-  '/front/pages/panelNotificaciones.html',
-  '/front/assets/css/styles.css',
-  '/front/assets/css/responsive.css',
-  '/front/js/app.js',
-  '/front/js/offline.js'
+  '/TiendaPWA-front/',
+  '/TiendaPWA-front/index.html',
+  '/TiendaPWA-front/pages/homeRepartidor.html',
+  '/TiendaPWA-front/pages/dasboardAdmin.html',
+  '/TiendaPWA-front/pages/loginAdmin.html',
+  '/TiendaPWA-front/pages/loginRepartidor.html',
+  '/TiendaPWA-front/pages/pedidos.html',
+  '/TiendaPWA-front/pages/pedidosPendientes.html',
+  '/TiendaPWA-front/pages/gestionPedidos.html',
+  '/TiendaPWA-front/pages/gestionProductos.html',
+  '/TiendaPWA-front/pages/gestionTiendas.html',
+  '/TiendaPWA-front/pages/gestionRepartidores.html',
+  '/TiendaPWA-front/pages/detalleTienda.html',
+  '/TiendaPWA-front/pages/perfil.html',
+  '/TiendaPWA-front/pages/registroVisita.html',
+  '/TiendaPWA-front/pages/visitasTemporal.html',
+  '/TiendaPWA-front/pages/confirmacionPedido.html',
+  '/TiendaPWA-front/pages/panelNotificaciones.html',
+  '/TiendaPWA-front/assets/css/styles.css',
+  '/TiendaPWA-front/assets/css/responsive.css',
+  '/TiendaPWA-front/js/app.js',
+  '/TiendaPWA-front/js/offline.js'
 ];
 
 // Instalación del Service Worker
@@ -82,7 +82,7 @@ self.addEventListener('fetch', event => {
         .catch(() => {
           // Si no hay red, servir del cache
           return caches.match(request)
-            .then(response => response || caches.match('/front/offline.html'));
+            .then(response => response || caches.match('/TiendaPWA-front/offline.html'));
         })
     );
   } else {
@@ -134,8 +134,8 @@ self.addEventListener('sync', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data ? event.data.text() : 'Nueva notificación',
-    icon: '/front/assets/icons/icon-192x192.png',
-    badge: '/front/assets/icons/icon-192x192.png',
+    icon: '/TiendaPWA-front/assets/icons/icon-192x192.png',
+    badge: '/TiendaPWA-front/assets/icons/icon-192x192.png',
     tag: 'narvaez-notification'
   };
 
@@ -150,12 +150,12 @@ self.addEventListener('notificationclick', event => {
     clients.matchAll({ type: 'window' }).then(clientList => {
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
-        if (client.url === '/front/' && 'focus' in client) {
+        if (client.url === '/TiendaPWA-front/' && 'focus' in client) {
           return client.focus();
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow('/front/');
+        return clients.openWindow('/TiendaPWA-front/');
       }
     })
   );
