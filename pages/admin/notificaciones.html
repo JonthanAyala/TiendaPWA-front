@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  
+  <title>Panel de Notificaciones</title>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
+      <h4>Tienda UCQ</h4>
+    </div>
+    <div class="sidebar-menu">
+      <a href="/front/pages/admin/dashboard.html">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/front/pages/admin/pedidos.html">
+        <i class="bi bi-box-seam"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="/front/pages/admin/productos.html">
+        <i class="bi bi-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="/front/pages/admin/tiendas.html">
+        <i class="bi bi-shop"></i>
+        <span>Tiendas</span>
+      </a>
+      <a href="/front/pages/admin/repartidores.html">
+        <i class="bi bi-person-badge"></i>
+        <span>Repartidores</span>
+      </a>
+      <a href="/front/pages/admin/notificaciones.html" class="active">
+        <i class="bi bi-bell"></i>
+        <span>Notificaciones</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 class="mb-0"><i class="bi bi-bell"></i> Panel de Notificaciones</h2>
+      <div>
+        <span class="badge bg-info me-3" id="user-badge">Admin</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
+    </div>
+
+    <div class="container-fluid p-4">
+      <div class="row my-3">
+        <div class="col-md-6">
+          <input type="text" class="form-control" id="search-input" placeholder="Buscar notificación...">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="type-filter">
+            <option value="all">Todas las notificaciones</option>
+            <option value="success">Éxito / Entregas</option>
+            <option value="info">Información / Pedidos</option>
+            <option value="warning">Alertas</option>
+            <option value="danger">Errores</option>
+          </select>
+        </div>
+        <div class="col-md-2 text-end">
+            <button class="btn btn-light w-100" onclick="loadNotifications()">
+                <i class="bi bi-arrow-clockwise"></i> Actualizar
+            </button>
+        </div>
+      </div>
+
+      <div class="list-group" id="notifications-container">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando actividad...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script src="/front/js/offline.js"></script>
+  
+  <script>
+    let allNotifications = [];
+
+    function checkAuth() {
+        if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
+            window.location.href = '/front/login.html';
+        }
+        document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
+    }
+    
+    function logout() { localStorage.clear(); window.location.href = '/front/login.html'; }
+
+    function timeAgo(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        if (seconds < 60) return "Hace unos segundos";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `Hace ${minutes} min`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `Hace ${hours} h`;
+        return date.toLocaleDateString();
+    }
+
+    function getIcon(type) {
+        switch(type) {
+            case 'success': return '<i class="bi bi-check-circle-fill text-success fs-4"></i>';
+            case 'warning': return '<i class="bi bi-exclamation-triangle-fill text-warning fs-4"></i>';
+            case 'danger': return '<i class="bi bi-x-circle-fill text-danger fs-4"></i>';
+            default: return '<i class="bi bi-info-circle-fill text-primary fs-4"></i>';
+        }
+    }
+
+    // 1. Cargar Notificaciones
+    async function loadNotifications() {
+        const container = document.getElementById('notifications-container');
+        
+        try {
+            // Asegúrate de que NotificationAPI.list() esté en tu api.js
+            // Si no está, agrégalo: const NotificationAPI = { list: () => apiCall('/notifications') };
+            const data = await NotificationAPI.list();
+            
+            // Ordenar por fecha descendente (más nuevo primero)
+            allNotifications = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            renderNotifications(allNotifications);
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <div>Error cargando notificaciones. Revisa que el backend tenga el NotificationController.</div>
+                </div>`;
+        }
+    }
+
+    // 2. Renderizar
+    function renderNotifications(list) {
+        const container = document.getElementById('notifications-container');
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bell-slash display-1 opacity-25"></i>
+                    <p class="mt-3">No hay notificaciones recientes.</p>
+                </div>`;
+            return;
+        }
+
+        list.forEach(n => {
+            const html = `
+                <div class="list-group-item list-group-item-action p-3 mb-2 border rounded shadow-sm">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            ${getIcon(n.type)}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-dark">${n.title || 'Notificación'}</h6>
+                                <small class="text-muted">${timeAgo(n.date)}</small>
+                            </div>
+                            <p class="mb-0 text-secondary">${n.message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // 3. Filtros
+    function filterNotifications() {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const type = document.getElementById('type-filter').value;
+
+        const filtered = allNotifications.filter(n => {
+            const matchesTerm = (n.title && n.title.toLowerCase().includes(term)) || (n.message && n.message.toLowerCase().includes(term));
+            const matchesType = type === 'all' || n.type === type;
+            return matchesTerm && matchesType;
+        });
+
+        renderNotifications(filtered);
+    }
+
+    document.getElementById('search-input').addEventListener('input', filterNotifications);
+    document.getElementById('type-filter').addEventListener('change', filterNotifications);
+
+    // Init
+    checkAuth();
+    loadNotifications();
+  </script>
+</body>
+</html>

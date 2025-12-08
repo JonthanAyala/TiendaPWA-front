@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f47b25">
+  <title>Mi Ruta</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  
+  <style>
+    :root { --primary: #f47b25; }
+    body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; padding-bottom: 80px; }
+
+    .topbar {
+      background: linear-gradient(135deg, var(--primary), #d96a1a);
+      color: white; padding: 15px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(244,123,37,0.3);
+    }
+
+    /* MENÚ DE NAVEGACIÓN UNIFICADO */
+    .nav-tabs-custom {
+      background: white; display: flex; justify-content: space-around;
+      position: sticky; top: 60px; z-index: 90; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .nav-link-custom {
+      flex: 1; text-align: center; padding: 12px; color: #6c757d; text-decoration: none;
+      border-bottom: 3px solid transparent; font-size: 0.9rem; transition: all 0.3s;
+    }
+    .nav-link-custom i { display: block; font-size: 1.3rem; margin-bottom: 2px; }
+    .nav-link-custom:hover { background-color: #fff5f0; color: var(--primary); }
+    
+    .nav-link-custom.active { 
+        color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; 
+    }
+
+    .store-card {
+        background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px;
+        border: 1px solid #eee; border-left: 5px solid var(--primary);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .btn-go {
+        width: 100%; background: var(--primary); color: white; border: none;
+        padding: 8px; border-radius: 8px; margin-top: 10px; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <h2 class="mb-0 fs-5 fw-bold"><i class="bi bi-map me-2"></i> Mi Ruta</h2>
+    <small class="text-white-50" id="user-name">Repartidor</small>
+  </div>
+
+  <div class="nav-tabs-custom">
+    <a href="/front/pages/repartidor/inicio.html" class="nav-link-custom active">
+        <i class="bi bi-signpost-2"></i> Ruta
+    </a>
+    <a href="/front/pages/repartidor/pedidos.html" class="nav-link-custom">
+        <i class="bi bi-box-seam"></i> Paquetes
+    </a>
+    <a href="/front/pages/repartidor/perfil.html" class="nav-link-custom">
+        <i class="bi bi-person"></i> Perfil
+    </a>
+  </div>
+
+  <div class="container py-4" id="route-container">
+    <div class="text-center py-5">
+        <div class="spinner-border text-warning" role="status"></div>
+        <p class="mt-2 text-muted">Cargando ruta...</p>
+    </div>
+  </div>
+
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script>
+    function checkAuth() {
+        if (!localStorage.getItem('user_id')) window.location.href = '/front/login.html';
+        document.getElementById('user-name').textContent = localStorage.getItem('user_name');
+    }
+
+    async function loadRoute() {
+        const container = document.getElementById('route-container');
+        try {
+            const allOrders = await OrderAPI.list();
+            // Filtrar pendientes
+            const activeOrders = allOrders.filter(o => o.status === 'PENDIENTE' || o.status === 'EN_PROCESO');
+
+            if (activeOrders.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-check-circle display-1 text-success opacity-50"></i><p class="mt-3">¡Ruta completada por hoy!</p></div>`;
+                return;
+            }
+
+            // Agrupar por tienda
+            const ordersByStore = {};
+            activeOrders.forEach(order => {
+                const storeId = order.store?.id;
+                if (!storeId) return;
+                if (!ordersByStore[storeId]) ordersByStore[storeId] = { info: order.store, orders: [] };
+                ordersByStore[storeId].orders.push(order);
+            });
+
+            container.innerHTML = `<h6 class="text-muted ms-1 mb-3 small fw-bold">PUNTOS DE RECOLECCIÓN</h6>`;
+            Object.values(ordersByStore).forEach(group => {
+                const store = group.info;
+                const count = group.orders.length;
+                
+                const card = `
+                    <div class="store-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0 fw-bold">${store.name}</h5>
+                            <span class="badge bg-warning text-dark rounded-pill">${count} Paquetes</span>
+                        </div>
+                        <p class="text-muted small mb-1"><i class="bi bi-geo-alt"></i> ${store.address || 'Sin dirección'}</p>
+                        <button class="btn-go" onclick="window.location.href='/front/pages/repartidor/tienda-detalle.html?id=${store.id}'">
+                            <i class="bi bi-arrow-right-circle me-1"></i> Ir a la Tienda
+                        </button>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', card);
+            });
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = '<div class="alert alert-danger">Error de conexión.</div>';
+        }
+    }
+
+    checkAuth();
+    loadRoute();
+  </script>
+</body>
+</html>

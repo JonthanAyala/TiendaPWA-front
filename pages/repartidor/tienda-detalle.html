@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle de Tienda</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  <style>
+    body { padding-bottom: 90px; background-color: #f8f9fa; }
+    .order-mini-card {
+        background: white; padding: 10px; border-bottom: 1px solid #eee;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    /* Estilo para el lector de cámara */
+    #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-white p-3 border-bottom sticky-top d-flex align-items-center shadow-sm">
+      <a href="/front/pages/repartidor/inicio.html" class="btn btn-light btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
+      <h5 class="mb-0 fw-bold flex-grow-1">Punto de Recolección</h5>
+  </div>
+
+  <div class="container py-3" id="content">
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+  </div>
+
+  <div class="fixed-bottom bg-white border-top p-3 shadow-lg">
+    <button id="btn-scan" class="btn btn-dark w-100 py-3 fw-bold shadow" onclick="abrirEscaner()">
+        <i class="bi bi-qr-code-scan me-2"></i> ESCANEAR CÓDIGO QR
+    </button>
+  </div>
+
+  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-dark text-white">
+          <h5 class="modal-title fs-6">Escaneando Tienda...</h5>
+          <button type="button" class="btn-close btn-close-white" onclick="cerrarEscaner()"></button>
+        </div>
+        <div class="modal-body p-0 bg-black">
+            <div id="reader"></div>
+            <div class="p-3 text-center text-white-50 small">
+                Apunta al código QR pegado en la tienda para confirmar tu llegada.
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script src="/front/js/api.js"></script>
+  
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const storeId = params.get('id');
+    let currentStore = null;
+    let html5QrcodeScanner = null;
+
+    // 1. Cargar Datos de la Tienda
+    async function loadData() {
+        if (!storeId) {
+            alert("Error: No hay tienda seleccionada");
+            window.location.href = '/front/pages/repartidor/inicio.html';
+            return;
+        }
+
+        try {
+            const stores = await StoreAPI.list();
+            currentStore = stores.find(s => s.id == storeId);
+
+            if (!currentStore) {
+                alert("Tienda no encontrada");
+                window.location.href = '/front/pages/repartidor/inicio.html';
+                return;
+            }
+
+            const allOrders = await OrderAPI.list();
+            const storeOrders = allOrders.filter(o => o.store?.id == storeId && (o.status === 'PENDIENTE' || o.status === 'EN_PROCESO'));
+
+            renderUI(currentStore, storeOrders);
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('content').innerHTML = '<p class="text-danger text-center">Error de conexión</p>';
+        }
+    }
+
+    function renderUI(store, orders) {
+        let ordersHtml = '';
+        if (orders.length > 0) {
+            orders.forEach(o => {
+                ordersHtml += `
+                    <div class="order-mini-card">
+                        <div>
+                            <span class="fw-bold">Pedido #${o.id}</span>
+                            <br><small class="text-muted">${o.clientName || 'Cliente'}</small>
+                        </div>
+                        <span class="badge bg-warning text-dark">${o.status}</span>
+                    </div>
+                `;
+            });
+        } else {
+            ordersHtml = '<p class="text-muted text-center py-2">No hay pedidos pendientes aquí.</p>';
+        }
+
+        const gpsLink = (store.latitude && store.longitude) 
+            ? `<a href="https://www.google.com/maps/search/?api=1&query=${store.latitude},${store.longitude}" target="_blank" class="btn btn-outline-primary flex-fill me-2"><i class="bi bi-map"></i> GPS</a>`
+            : `<button class="btn btn-outline-secondary flex-fill me-2" disabled><i class="bi bi-map"></i> Sin GPS</button>`;
+
+        const html = `
+            <h2 class="fw-bold mb-1">${store.name}</h2>
+            <p class="text-muted mb-3">Código esperado: <span class="badge bg-light text-dark border">${store.code}</span></p>
+
+            <div class="d-flex mb-4">
+                ${gpsLink}
+                <a href="tel:${store.phone}" class="btn btn-outline-secondary flex-fill"><i class="bi bi-telephone"></i> Llamar</a>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body bg-light rounded">
+                    <p class="mb-1"><i class="bi bi-geo-alt text-danger me-2"></i> ${store.address || 'Sin dirección registrada'}</p>
+                </div>
+            </div>
+
+            <h6 class="text-uppercase text-muted small fw-bold mb-2">Pedidos a Recoger (${orders.length})</h6>
+            <div class="card border shadow-sm overflow-hidden">
+                ${ordersHtml}
+            </div>
+        `;
+
+        document.getElementById('content').innerHTML = html;
+    }
+
+    // --- LÓGICA DEL QR ---
+
+    function abrirEscaner() {
+        const modalElement = document.getElementById('qrModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        // Limpiar instancia previa si existe
+        if(html5QrcodeScanner) { 
+            html5QrcodeScanner.clear(); 
+        }
+
+        // Iniciar cámara
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 }
+        );
+        
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    }
+
+    function cerrarEscaner() {
+        if(html5QrcodeScanner) {
+            html5QrcodeScanner.clear().then(_ => {
+                bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+            }).catch(error => {
+                console.error("Error al cerrar cámara", error);
+                // Forzar cierre modal aunque falle cámara
+                bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+            });
+        } else {
+            bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Detener escaneo inmediatamente
+        html5QrcodeScanner.clear();
+        bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+
+        // Validar código
+        if (decodedText === currentStore.code) {
+            procesarVisita();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Código Incorrecto',
+                text: `Escaneaste "${decodedText}", pero se esperaba "${currentStore.code}".`
+            });
+        }
+    }
+
+    function onScanFailure(error) {
+        // No hacer nada, es ruido normal mientras busca QR
+    }
+
+    async function procesarVisita() {
+        if (!navigator.geolocation) {
+            return Swal.fire('Error', 'Tu dispositivo no tiene GPS activo.', 'error');
+        }
+
+        Swal.fire({
+            title: 'Verificando ubicación...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading() }
+        });
+
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            try {
+                const userId = localStorage.getItem('user_id');
+                
+                // Enviar al Backend
+                await VisitAPI.registerScan(
+                    currentStore.code, 
+                    userId, 
+                    pos.coords.latitude, 
+                    pos.coords.longitude,
+                    true, 
+                    false 
+                );
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Check-in Exitoso!',
+                    text: 'Visita registrada correctamente.',
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    window.location.href = '/front/pages/repartidor/inicio.html';
+                });
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'No se pudo registrar la visita en el servidor.', 'error');
+            }
+        }, (err) => {
+            Swal.fire('Error GPS', 'Necesitamos tu ubicación para validar la visita.', 'error');
+        });
+    }
+
+    // Iniciar
+    loadData();
+  </script>
+</body>
+</html>

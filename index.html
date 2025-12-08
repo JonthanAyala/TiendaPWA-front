@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tienda UCQ - Sistema de gestión de pedidos, tiendas y entregas">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="color-scheme" content="light dark">
+
+  <!-- Apple Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tienda UCQ">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+
+  <!-- Progressive Web App -->
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="icon" type="image/png" href="/front/assets/icons/icon-192x192.png">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="/front/css/admin.css">
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #f47b25;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+    }
+
+    * {
+      transition: all 0.3s ease;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #7c3aed 100%);
+      min-height: 100vh;
+      font-family: 'Work Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body.light-mode {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .navbar {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
+      border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color) !important;
+      margin-right: 2rem;
+    }
+
+    .navbar-brand i {
+      margin-right: 0.5rem;
+      font-size: 1.8rem;
+    }
+
+    .nav-link {
+      color: #6b7280 !important;
+      font-weight: 500;
+      margin: 0 0.5rem;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: var(--primary-color) !important;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 2px;
+      bottom: -5px;
+      left: 0;
+      background-color: var(--primary-color);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .connection-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .connection-badge.offline {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+
+    .connection-badge .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success-color);
+      animation: pulse 2s infinite;
+    }
+
+    .connection-badge.offline .pulse {
+      background: var(--danger-color);
+      animation: none;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .hero {
+      padding: 4rem 0 2rem;
+      color: white;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      opacity: 0.95;
+    }
+
+    .feature-card {
+      background: white;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      height: 100%;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .feature-card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-primary .feature-card-icon {
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary-color);
+    }
+
+    .card-secondary .feature-card-icon {
+      background: rgba(244, 123, 37, 0.1);
+      color: var(--secondary-color);
+    }
+
+    .card-success .feature-card-icon {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .card-warning .feature-card-icon {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+
+    .cta-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .btn-modern {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-modern i {
+      font-size: 1.25rem;
+    }
+
+    .btn-modern-primary {
+      background: linear-gradient(135deg, var(--primary-color), #1e40af);
+      color: white;
+    }
+
+    .btn-modern-primary:hover {
+      color: white;
+      background: linear-gradient(135deg, #1e40af, var(--primary-color));
+    }
+
+    .btn-modern-secondary {
+      background: linear-gradient(135deg, var(--secondary-color), #d85c1e);
+      color: white;
+    }
+
+    .btn-modern-secondary:hover {
+      color: white;
+      background: linear-gradient(135deg, #d85c1e, var(--secondary-color));
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section h2 i {
+      font-size: 1.5rem;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .feature-list li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list i {
+      color: var(--success-color);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .info-alert {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
+      border-left: 4px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .info-alert i {
+      color: var(--primary-color);
+      font-size: 1.25rem;
+      margin-right: 1rem;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .step-card {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(59, 130, 246, 0.05));
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--primary-color);
+      color: white;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-card h4 {
+      color: var(--primary-color);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-card p {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    footer {
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+
+    footer p {
+      margin: 0.25rem 0;
+    }
+
+    .install-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, var(--primary-color), #1e40af);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      animation: slideUp 0.3s ease;
+    }
+
+    .install-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .cta-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .navbar-nav {
+        gap: 0.5rem;
+      }
+    }
+  </style>
+
+  <title>Tienda UCQ - Sistema de Gestión</title>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/front/index.html">
+        <i class="bi bi-shop"></i> Tienda UCQ
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <span class="connection-badge" id="connection-status">
+              <span class="pulse"></span> En línea
+            </span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/front/login.html">
+              <i class="bi bi-box-arrow-in-right"></i> Ingresar
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>🏪 Bienvenido a Tienda UCQ</h1>
+      <p>Sistema integral de gestión de pedidos, tiendas y entregas</p>
+      <a href="/front/login.html" class="btn btn-modern btn-modern-primary">
+        <i class="bi bi-box-arrow-in-right"></i> Ingresar Ahora
+      </a>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <!-- Features Section -->
+    <section class="row g-4 mb-5">
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card card-primary">
+          <div class="p-4">
+            <div class="feature-card-icon">
+              <i class="bi bi-box2-heart"></i>
+            </div>
+            <h5 class="card-title">Gestión de Pedidos</h5>
+            <p class="card-text text-muted">Crea, edita y monitorea todos tus pedidos en tiempo real.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card card-secondary">
+          <div class="p-4">
+            <div class="feature-card-icon">
+              <i class="bi bi-shop"></i>
+            </div>
+            <h5 class="card-title">Control de Tiendas</h5>
+            <p class="card-text text-muted">Administra la información de todas tus tiendas.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card card-success">
+          <div class="p-4">
+            <div class="feature-card-icon">
+              <i class="bi bi-person-badge"></i>
+            </div>
+            <h5 class="card-title">Repartidores</h5>
+            <p class="card-text text-muted">Asigna y monitorea entregas con tu equipo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card card-warning">
+          <div class="p-4">
+            <div class="feature-card-icon">
+              <i class="bi bi-bell-fill"></i>
+            </div>
+            <h5 class="card-title">Notificaciones</h5>
+            <p class="card-text text-muted">Recibe alertas en tiempo real de eventos importantes.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main CTA Section -->
+    <section class="section">
+      <h2><i class="bi bi-lightning-charge"></i> Acceso Rápido</h2>
+      <div class="cta-buttons">
+        <a href="/front/login.html?role=admin" class="btn btn-modern btn-modern-primary">
+          <i class="bi bi-graph-up"></i> Panel Administrativo
+        </a>
+        <a href="/front/login.html?role=repartidor" class="btn btn-modern btn-modern-secondary">
+          <i class="bi bi-pin-map"></i> Área Repartidor
+        </a>
+      </div>
+    </section>
+
+    <!-- Features List Section -->
+    <section class="section">
+      <h2><i class="bi bi-check-circle"></i> Características Principales</h2>
+      <div class="row">
+        <div class="col-md-6">
+          <ul class="feature-list">
+            <li><i class="bi bi-wifi-off"></i> Funciona offline con sincronización automática</li>
+            <li><i class="bi bi-download"></i> Se puede instalar como aplicación nativa</li>
+            <li><i class="bi bi-truck"></i> Gestión completa de entregas</li>
+            <li><i class="bi bi-box-seam"></i> Control de inventario y productos</li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <ul class="feature-list">
+            <li><i class="bi bi-bell"></i> Notificaciones en tiempo real</li>
+            <li><i class="bi bi-file-earmark-text"></i> Historial detallado de operaciones</li>
+            <li><i class="bi bi-phone"></i> Totalmente responsiva (móvil y desktop)</li>
+            <li><i class="bi bi-shield-check"></i> Compatible con iOS y Android</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 Tienda UCQ - Todos los derechos reservados</p>
+    <p>Versión 1.0.0 | Progressive Web App (PWA)</p>
+  </footer>
+
+  <!-- Install Button -->
+  <!-- Bootstrap JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+  <!-- PWA Scripts -->
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+  <script src="/front/js/firebase-init.js"></script>
+
+  <script src="/front/js/app.js"></script>
+  <script src="/front/js/offline.js"></script>
+
+  <script>
+    // Update connection status
+    function updateConnectionStatus() {
+      const badge = document.getElementById('connection-status');
+      if (navigator.onLine) {
+        badge.classList.remove('offline');
+        badge.innerHTML = '<span class="pulse"></span> En línea';
+      } else {
+        badge.classList.add('offline');
+        badge.innerHTML = '<span class="pulse"></span> Sin conexión';
+      }
+    }
+
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+    updateConnectionStatus();
+  </script>
+</body>
+
+</html>

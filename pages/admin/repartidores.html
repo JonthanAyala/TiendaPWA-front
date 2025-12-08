@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+
+  <title>Gestión de Repartidores</title>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
+      <h4>Tienda UCQ</h4>
+    </div>
+    <div class="sidebar-menu">
+      <a href="/front/pages/admin/dashboard.html">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/front/pages/admin/pedidos.html">
+        <i class="bi bi-box-seam"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="/front/pages/admin/productos.html">
+        <i class="bi bi-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="/front/pages/admin/tiendas.html">
+        <i class="bi bi-shop"></i>
+        <span>Tiendas</span>
+      </a>
+      <a href="/front/pages/admin/repartidores.html" class="active">
+        <i class="bi bi-person-badge"></i>
+        <span>Repartidores</span>
+      </a>
+      <a href="/front/pages/admin/notificaciones.html">
+        <i class="bi bi-bell"></i>
+        <span>Notificaciones</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 class="mb-0"><i class="bi bi-person-badge"></i> Gestión de Repartidores</h2>
+      <div>
+        <span class="badge bg-info me-3" id="user-badge">Admin</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
+    </div>
+
+    <div class="container-fluid p-4">
+      <div id="message-container"></div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="search-input" placeholder="Buscar por nombre o email...">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="status-filter">
+                <option value="all">Todos los estados</option>
+                <option value="active">Activos</option>
+                <option value="inactive">Inactivos</option>
+              </select>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#newRepartidorModal">
+                <i class="bi bi-person-plus-fill"></i> Nuevo Repartidor
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-4" style="width: 10%;">ID</th>
+                <th scope="col" style="width: 30%;">Repartidor</th>
+                <th scope="col" style="width: 25%;">Email</th>
+                <th scope="col" style="width: 15%;">Estado</th>
+                <th scope="col" style="width: 20%;" class="text-end pe-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="repartidores-table-body">
+              <tr>
+                <td colspan="5" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                  </div>
+                  <p class="mt-2 text-muted">Cargando repartidores...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="newRepartidorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Registrar Repartidor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newRepartidorForm">
+            <div class="mb-3">
+              <label class="form-label">Nombre Completo</label>
+              <input type="text" class="form-control" id="new-nombre" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" class="form-control" id="new-email" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Contraseña</label>
+              <input type="password" class="form-control" id="new-password" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Asignar Tienda (Opcional)</label>
+              <select class="form-select" id="new-store-select">
+                <option value="" selected>Sin tienda asignada</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-2">
+              <i class="bi bi-save me-2"></i> Guardar Repartidor
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detalleRepartidorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Perfil del Repartidor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-4">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+              style="width: 80px; height: 80px;">
+              <i class="bi bi-person text-secondary" style="font-size: 2.5rem;"></i>
+            </div>
+            <h4 class="mb-0" id="detalle-nombre">Nombre</h4>
+            <span class="text-muted" id="detalle-role">Repartidor</span>
+          </div>
+
+          <div class="card bg-light border-0 mb-3">
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="small text-muted text-uppercase fw-bold">ID</label>
+                  <div class="fw-bold" id="detalle-id">#</div>
+                </div>
+                <div class="col-6">
+                  <label class="small text-muted text-uppercase fw-bold">Estado</label>
+                  <div id="detalle-estado">Active</div>
+                </div>
+                <div class="col-12">
+                  <label class="small text-muted text-uppercase fw-bold">Email</label>
+                  <div class="fw-bold" id="detalle-email">email@test.com</div>
+                </div>
+                <div class="col-12">
+                  <label class="small text-muted text-uppercase fw-bold">Tienda Base</label>
+                  <div class="d-flex align-items-center">
+                    <i class="bi bi-shop me-2 text-primary"></i>
+                    <span id="detalle-tienda">Sin asignar</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-2 text-center">
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <h3 class="mb-0 fw-bold text-primary" id="stat-visitas">-</h3>
+                <small class="text-muted">Visitas Totales</small>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="border rounded p-2">
+                <h3 class="mb-0 fw-bold text-success" id="stat-pedidos">-</h3> <small class="text-muted">Pedidos
+                  Entregados</small>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive"
+      aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-message"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script src="/front/js/offline.js"></script>
+
+  <script>
+    let allRepartidores = [];
+
+    function checkAuth() {
+      if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
+        window.location.href = '/front/login.html';
+      }
+      document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/front/login.html';
+    }
+
+    // 1. Cargar Repartidores
+    async function loadRepartidores() {
+      const tbody = document.getElementById('repartidores-table-body');
+      try {
+        const users = await UserAPI.list();
+        allRepartidores = users.filter(u => u.role === 'REPARTIDOR');
+        renderTable(allRepartidores);
+      } catch (error) {
+        console.error('Error:', error);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error al cargar datos.</td></tr>`;
+      }
+    }
+
+    // 2. Cargar Tiendas para el Modal de Crear
+    async function loadStoresForSelect() {
+      try {
+        const stores = await StoreAPI.list();
+        const select = document.getElementById('new-store-select');
+        // Mantener la opción por defecto
+        select.innerHTML = '<option value="" selected>Sin tienda asignada</option>';
+
+        stores.forEach(store => {
+          const option = document.createElement('option');
+          option.value = store.id;
+          option.textContent = `${store.name} (${store.city || 'N/A'})`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error cargando tiendas:", error);
+      }
+    }
+
+    // 3. Crear Repartidor (Lógica del Modal)
+    document.getElementById('newRepartidorForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = this.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+      btn.disabled = true;
+
+      const userData = {
+        name: document.getElementById('new-nombre').value,
+        email: document.getElementById('new-email').value,
+        password: document.getElementById('new-password').value,
+        role: 'REPARTIDOR' // Rol fijo
+      };
+      const storeId = document.getElementById('new-store-select').value;
+
+      try {
+        // A. Crear Usuario
+        const newUser = await UserAPI.create(userData);
+
+        // B. Asignar Tienda (si se seleccionó una)
+        if (storeId) {
+          await UserAPI.assignStore(newUser.id, storeId);
+        }
+
+        showToast(`Repartidor ${newUser.name} creado correctamente.`, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('newRepartidorModal')).hide();
+        this.reset();
+        await loadRepartidores();
+
+      } catch (error) {
+        let msg = error.message;
+        if (msg.includes('409')) msg = 'El correo ya está registrado.';
+        showToast('Error: ' + msg, 'danger');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
+
+    // 4. Renderizar Tabla
+    function renderTable(repartidores) {
+      const tbody = document.getElementById('repartidores-table-body');
+      tbody.innerHTML = '';
+
+      if (repartidores.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted">No se encontraron repartidores.</td></tr>`;
+        return;
+      }
+
+      repartidores.forEach((rep, index) => {
+        const isActive = true; // Asumimos activo por ahora
+        const statusBadge = isActive
+          ? '<span class="badge bg-success bg-opacity-10 text-success rounded-pill">Activo</span>'
+          : '<span class="badge bg-secondary rounded-pill">Inactivo</span>';
+
+        // Manejo seguro de la tienda
+        const storeName = (rep.store && rep.store.name) ? rep.store.name : '<span class="text-muted fst-italic">Sin asignar</span>';
+
+        const row = `
+          <tr>
+            <td class="ps-4 fw-bold text-muted">#${rep.id || 'N/A'}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                  <i class="bi bi-person-fill text-secondary"></i>
+                </div>
+                <div><div class="fw-bold text-dark">${rep.name}</div></div>
+              </div>
+            </td>
+            <td class="text-muted">${rep.email}</td>
+            <td>${statusBadge}</td>
+            <td class="text-end pe-4">
+              <button class="btn btn-sm btn-outline-info me-1" onclick="openDetailModal(${index})" title="Ver Detalles">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteRepartidor(${index})" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', row);
+      });
+    }
+
+    // 5. Filtros
+    function filterRepartidores() {
+      const term = document.getElementById('search-input').value.toLowerCase();
+      const filtered = allRepartidores.filter(rep => {
+        return rep.name.toLowerCase().includes(term) || rep.email.toLowerCase().includes(term);
+      });
+      renderTable(filtered);
+    }
+    document.getElementById('search-input').addEventListener('input', filterRepartidores);
+
+    // 6. Detalle
+    async function openDetailModal(index) {
+      const rep = allRepartidores[index];
+      if (!rep) return;
+
+      document.getElementById('detalle-nombre').textContent = rep.name;
+      document.getElementById('detalle-id').textContent = '#' + rep.id;
+      document.getElementById('detalle-email').textContent = rep.email;
+      document.getElementById('detalle-tienda').textContent = (rep.store && rep.store.name) ? rep.store.name : 'Sin tienda asignada';
+
+      document.getElementById('stat-visitas').innerHTML = '<div class="spinner-border spinner-border-sm"></div>';
+      document.getElementById('stat-pedidos').innerHTML = '-';
+
+      const modal = new bootstrap.Modal(document.getElementById('detalleRepartidorModal'));
+      modal.show();
+
+      try {
+        const visits = await VisitAPI.findByRepartidor(rep.id);
+        document.getElementById('stat-visitas').textContent = visits.length;
+      } catch (e) {
+        document.getElementById('stat-visitas').textContent = 'Err';
+      }
+    }
+
+    // 7. Eliminar
+    async function deleteRepartidor(index) {
+      const rep = allRepartidores[index];
+      if (!rep) return;
+
+      const result = await Swal.fire({
+        title: '¿Eliminar repartidor?',
+        text: `Estás a punto de eliminar a "${rep.name}".`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await UserAPI.delete(rep.id);
+          showToast('Repartidor eliminado.', 'success');
+          await loadRepartidores();
+        } catch (error) {
+          Swal.fire('Error', 'No se pudo eliminar.', 'error');
+        }
+      }
+    }
+
+    function showToast(msg, type) {
+      const el = document.getElementById('liveToast');
+      const body = document.getElementById('toast-message');
+      el.className = `toast align-items-center text-white border-0 bg-${type}`;
+      body.textContent = msg;
+      new bootstrap.Toast(el).show();
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadRepartidores();
+      loadStoresForSelect(); // Cargar tiendas para el modal
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  
+  <title>Gestión de Tiendas</title>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
+      <h4>Tienda UCQ</h4>
+    </div>
+    <div class="sidebar-menu">
+      <a href="/front/pages/admin/dashboard.html">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/front/pages/admin/pedidos.html">
+        <i class="bi bi-box-seam"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="/front/pages/admin/productos.html">
+        <i class="bi bi-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="/front/pages/admin/tiendas.html" class="active">
+        <i class="bi bi-shop"></i>
+        <span>Tiendas</span>
+      </a>
+      <a href="/front/pages/admin/repartidores.html">
+        <i class="bi bi-person-badge"></i>
+        <span>Repartidores</span>
+      </a>
+      <a href="/front/pages/admin/notificaciones.html">
+        <i class="bi bi-bell"></i>
+        <span>Notificaciones</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 class="mb-0"><i class="bi bi-shop"></i> Gestión de Tiendas</h2>
+      <div>
+        <span class="badge bg-info me-3" id="user-badge">Admin</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
+    </div>
+
+    <div class="container-fluid p-4">
+      <div id="message-container"></div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3 align-items-center">
+            <div class="col-md-5">
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="search-input" placeholder="Buscar tienda...">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <select class="form-select" id="city-filter">
+                <option value="all">Todas las ciudades</option>
+              </select>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#newTiendaModal">
+                <i class="bi bi-plus-circle"></i> Nueva Tienda
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="ps-4" style="width: 5%;">ID</th>
+                <th scope="col" style="width: 20%;">Nombre</th>
+                <th scope="col" style="width: 15%;">Código</th>
+                <th scope="col" style="width: 15%;">Ciudad</th>
+                <th scope="col" style="width: 15%;">Teléfono</th>
+                <th scope="col" style="width: 10%;">QR</th> <th scope="col" style="width: 20%;" class="text-end pe-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tiendas-table-body">
+              <tr>
+                <td colspan="7" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                  </div>
+                  <p class="mt-2 text-muted">Cargando tiendas...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="newTiendaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Nueva Tienda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newTiendaForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="tienda-nombre" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Código (Único)</label>
+                <input type="text" class="form-control" id="tienda-code" placeholder="EJ: TIENDA-001" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Ciudad</label>
+                <input type="text" class="form-control" id="tienda-ciudad" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-control" id="tienda-telefono" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Dirección</label>
+              <textarea class="form-control" id="tienda-direccion" rows="2" required></textarea>
+            </div>
+            
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0 fw-bold">Coordenadas GPS</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="obtenerUbicacion('tienda-lat', 'tienda-lng', this)">
+                            <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="tienda-lat" step="any" placeholder="Latitud">
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm" id="tienda-lng" step="any" placeholder="Longitud">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mt-3">Crear Tienda</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detalleTiendaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold">Editar Tienda</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="detalle-tienda-id">
+          <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Nombre</label>
+                <input type="text" class="form-control" id="detalle-tienda-nombre">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Código</label>
+                <input type="text" class="form-control" id="detalle-tienda-code">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Ciudad</label>
+                <input type="text" class="form-control" id="detalle-tienda-ciudad">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted text-uppercase fw-bold">Teléfono</label>
+                <input type="text" class="form-control" id="detalle-tienda-telefono">
+            </div>
+            <div class="col-12">
+                <label class="form-label small text-muted text-uppercase fw-bold">Dirección</label>
+                <textarea class="form-control" id="detalle-tienda-direccion" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+                <div class="card bg-light border-0">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="small text-muted text-uppercase fw-bold mb-0">Ubicación</label>
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" onclick="obtenerUbicacion('detalle-tienda-lat', 'detalle-tienda-lng', this)">
+                                <i class="bi bi-crosshair"></i> Actualizar GPS
+                            </button>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6"><input type="number" class="form-control form-control-sm" id="detalle-tienda-lat" step="any"></div>
+                            <div class="col-6"><input type="number" class="form-control form-control-sm" id="detalle-tienda-lng" step="any"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-success" onclick="guardarCambios()">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalQR" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center pt-0 pb-4">
+            <h5 class="fw-bold mb-3" id="qr-store-name">Nombre Tienda</h5>
+            <div id="qr-container" class="d-flex justify-content-center"></div>
+            <p class="mt-3 mb-0 text-muted small">Escanea este código con la App de Repartidor</p>
+            <div class="mt-2 fw-bold text-primary" id="qr-code-text">CODE</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-message"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script src="/front/js/offline.js"></script>
+
+  <script>
+    let allTiendas = [];
+
+    function checkAuth() { 
+      if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
+        window.location.href = '/front/login.html'; 
+      }
+      document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
+    }
+    
+    function logout() { localStorage.clear(); window.location.href = '/front/login.html'; }
+
+    async function loadTiendas() {
+      const tbody = document.getElementById('tiendas-table-body');
+      try {
+        allTiendas = await StoreAPI.list();
+        actualizarFiltroCiudades(allTiendas);
+        renderTable(allTiendas);
+      } catch (error) {
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Error al cargar datos.</td></tr>`;
+      }
+    }
+
+    function actualizarFiltroCiudades(tiendas) {
+        const selector = document.getElementById('city-filter');
+        const valorActual = selector.value;
+        selector.innerHTML = '<option value="all">Todas las ciudades</option>';
+        const ciudadesUnicas = [...new Set(tiendas.map(t => t.city))].filter(c => c);
+        ciudadesUnicas.sort().forEach(ciudad => {
+            const option = document.createElement('option');
+            option.value = ciudad;
+            option.textContent = ciudad;
+            selector.appendChild(option);
+        });
+        if (ciudadesUnicas.includes(valorActual)) selector.value = valorActual;
+    }
+
+    function renderTable(tiendas) {
+      const tbody = document.getElementById('tiendas-table-body');
+      tbody.innerHTML = '';
+
+      if (tiendas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">No se encontraron tiendas.</td></tr>`;
+        return;
+      }
+
+      tiendas.forEach(tienda => {
+        const row = document.createElement('tr');
+        const tiendaJson = JSON.stringify(tienda).replace(/'/g, "\\'");
+
+        row.innerHTML = `
+          <td class="ps-4 fw-bold text-muted">#${tienda.id}</td>
+          <td><span class="fw-bold text-dark">${tienda.name}</span></td>
+          <td><span class="badge bg-light text-dark border">${tienda.code}</span></td>
+          <td>${tienda.city || 'N/A'}</td>
+          <td class="text-muted small">${tienda.phone || 'N/A'}</td>
+          
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-dark" onclick="mostrarQR('${tienda.code}', '${tienda.name}')">
+                <i class="bi bi-qr-code"></i>
+            </button>
+          </td>
+
+          <td class="text-end pe-4">
+            <button class="btn btn-sm btn-outline-info me-1" onclick='openDetailModal(${tiendaJson})'><i class="bi bi-pencil-square"></i></button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTienda(${tienda.id}, '${tienda.name}')"><i class="bi bi-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // 🔥 FUNCIÓN PARA GENERAR QR EN EL MODAL
+    function mostrarQR(codigo, nombre) {
+        document.getElementById('qr-store-name').innerText = nombre;
+        document.getElementById('qr-code-text').innerText = codigo;
+        
+        const container = document.getElementById('qr-container');
+        container.innerHTML = ''; // Limpiar anterior
+        
+        new QRCode(container, {
+            text: codigo,
+            width: 180,
+            height: 180
+        });
+        
+        new bootstrap.Modal(document.getElementById('modalQR')).show();
+    }
+
+    // (El resto de funciones: filtros, crear, editar, eliminar, gps... se mantienen igual)
+    function filterTiendas() {
+      const term = document.getElementById('search-input').value.toLowerCase();
+      const city = document.getElementById('city-filter').value;
+      const filtered = allTiendas.filter(t => {
+        const matchesTerm = t.name.toLowerCase().includes(term) || t.code.toLowerCase().includes(term);
+        const matchesCity = city === 'all' || t.city === city;
+        return matchesTerm && matchesCity;
+      });
+      renderTable(filtered);
+    }
+    
+    document.getElementById('search-input').addEventListener('input', filterTiendas);
+    document.getElementById('city-filter').addEventListener('change', filterTiendas);
+
+    function obtenerUbicacion(latId, lngId, btnElement) {
+        if (!navigator.geolocation) return showToast('Sin GPS', 'danger');
+        btnElement.innerHTML = '...'; btnElement.disabled = true;
+        navigator.geolocation.getCurrentPosition((pos) => {
+            document.getElementById(latId).value = pos.coords.latitude;
+            document.getElementById(lngId).value = pos.coords.longitude;
+            btnElement.innerHTML = 'GPS OK'; btnElement.disabled = false;
+        }, () => { btnElement.innerHTML = 'Error'; btnElement.disabled = false; });
+    }
+
+    document.getElementById('newTiendaForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const newTienda = {
+        name: document.getElementById('tienda-nombre').value,
+        code: document.getElementById('tienda-code').value,
+        city: document.getElementById('tienda-ciudad').value,
+        address: document.getElementById('tienda-direccion').value,
+        phone: document.getElementById('tienda-telefono').value,
+        latitude: document.getElementById('tienda-lat').value ? parseFloat(document.getElementById('tienda-lat').value) : null,
+        longitude: document.getElementById('tienda-lng').value ? parseFloat(document.getElementById('tienda-lng').value) : null
+      };
+      try {
+        await StoreAPI.create(newTienda);
+        bootstrap.Modal.getInstance(document.getElementById('newTiendaModal')).hide();
+        this.reset();
+        await loadTiendas();
+        showToast('Tienda creada', 'success');
+      } catch (error) { showToast('Error al crear', 'danger'); }
+    });
+
+    function openDetailModal(tienda) {
+      document.getElementById('detalle-tienda-id').value = tienda.id;
+      document.getElementById('detalle-tienda-nombre').value = tienda.name;
+      document.getElementById('detalle-tienda-code').value = tienda.code;
+      document.getElementById('detalle-tienda-ciudad').value = tienda.city || '';
+      document.getElementById('detalle-tienda-direccion').value = tienda.address || '';
+      document.getElementById('detalle-tienda-telefono').value = tienda.phone || '';
+      document.getElementById('detalle-tienda-lat').value = tienda.latitude || '';
+      document.getElementById('detalle-tienda-lng').value = tienda.longitude || '';
+      new bootstrap.Modal(document.getElementById('detalleTiendaModal')).show();
+    }
+
+    async function guardarCambios() {
+      const id = document.getElementById('detalle-tienda-id').value;
+      const updatedStore = {
+        id: id,
+        name: document.getElementById('detalle-tienda-nombre').value,
+        code: document.getElementById('detalle-tienda-code').value,
+        city: document.getElementById('detalle-tienda-ciudad').value,
+        address: document.getElementById('detalle-tienda-direccion').value,
+        phone: document.getElementById('detalle-tienda-telefono').value,
+        latitude: document.getElementById('detalle-tienda-lat').value ? parseFloat(document.getElementById('detalle-tienda-lat').value) : null,
+        longitude: document.getElementById('detalle-tienda-lng').value ? parseFloat(document.getElementById('detalle-tienda-lng').value) : null
+      };
+      try {
+        await StoreAPI.update(id, updatedStore); 
+        bootstrap.Modal.getInstance(document.getElementById('detalleTiendaModal')).hide();
+        await loadTiendas();
+        showToast('Actualizado', 'success');
+      } catch (error) { showToast('Error al actualizar', 'danger'); }
+    }
+
+    async function deleteTienda(id, name) {
+      const result = await Swal.fire({ title: '¿Eliminar?', text: name, icon: 'warning', showCancelButton: true });
+      if (result.isConfirmed) {
+        try {
+          await StoreAPI.delete(id);
+          allTiendas = allTiendas.filter(t => t.id !== id);
+          renderTable(allTiendas);
+          showToast('Eliminado', 'success');
+        } catch (error) { showToast('Error', 'danger'); }
+      }
+    }
+
+    function showToast(msg, type) {
+      const el = document.getElementById('liveToast');
+      const body = document.getElementById('toast-message');
+      el.className = `toast align-items-center text-white border-0 bg-${type}`;
+      body.textContent = msg;
+      new bootstrap.Toast(el).show();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { checkAuth(); loadTiendas(); });
+  </script>
+</body>
+</html>

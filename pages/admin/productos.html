@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+
+  <title>Gestión de Productos</title>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
+      <h4>Tienda UCQ</h4>
+    </div>
+    <div class="sidebar-menu">
+      <a href="/front/pages/admin/dashboard.html">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/front/pages/admin/pedidos.html">
+        <i class="bi bi-box-seam"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="/front/pages/admin/productos.html" class="active">
+        <i class="bi bi-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="/front/pages/admin/tiendas.html">
+        <i class="bi bi-shop"></i>
+        <span>Tiendas</span>
+      </a>
+      <a href="/front/pages/admin/repartidores.html">
+        <i class="bi bi-person-badge"></i>
+        <span>Repartidores</span>
+      </a>
+      <a href="/front/pages/admin/notificaciones.html">
+        <i class="bi bi-bell"></i>
+        <span>Notificaciones</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 class="mb-0"><i class="bi bi-box"></i> Gestión de Productos</h2>
+      <div>
+        <span class="badge bg-info me-3" id="user-badge">Admin</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
+    </div>
+
+    <div class="container-fluid py-4">
+      <div id="message-container"></div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-lg-4 col-md-6">
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" placeholder="Buscar por nombre o SKU..." id="filtro-nombre">
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="input-group">
+                <span class="input-group-text bg-light">$</span>
+                <input type="number" class="form-control" placeholder="Precio mín..." id="filtro-precio-min">
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+              <div class="input-group">
+                <span class="input-group-text bg-light">$</span>
+                <input type="number" class="form-control" placeholder="Precio máx..." id="filtro-precio-max">
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-6">
+              <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#newProductoModal">
+                <i class="bi bi-plus-circle"></i> Nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 5%;" class="text-center">ID</th>
+                <th style="width: 30%;">Producto</th>
+                <th style="width: 15%;">SKU</th>
+                <th style="width: 15%;">Precio</th>
+                <th style="width: 15%;">Stock</th>
+                <th style="width: 20%;" class="text-end pe-4">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="productos-table-body">
+              <tr>
+                <td colspan="6" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                  </div>
+                  <p class="mt-2 text-muted">Cargando catálogo...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="newProductoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Nuevo Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="newProductoForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">SKU</label>
+                <input type="text" class="form-control" id="sku" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Precio</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="precio" step="0.01" required>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Stock Inicial</label>
+                <input type="number" class="form-control" id="stock" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea class="form-control" id="descripcion" rows="3"></textarea>
+            </div>
+            <div class="row align-items-center">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Foto del Producto</label>
+                <input type="file" class="form-control" id="foto" accept="image/*">
+              </div>
+              <div class="col-md-6 mb-3 text-center">
+                <div id="foto-preview"></div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Producto</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detalleProductoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detalles del Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-4 text-center mb-3">
+              <div id="detalle-foto" class="mb-2 shadow-sm"
+                style="width: 100%; height: 200px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; border: 1px solid #dee2e6;">
+                <i class="bi bi-image" style="font-size: 3rem; color: #adb5bd;"></i>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-primary w-100 mb-3" data-bs-toggle="modal"
+                data-bs-target="#cambiarFotoModal">
+                <i class="bi bi-camera"></i> Cambiar Foto
+              </button>
+
+              <div class="card bg-light border-0">
+                <div class="card-body p-2">
+                  <small class="text-muted d-block mb-2">Código QR</small>
+                  <div id="detalle-qr" class="d-flex justify-content-center"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-8">
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label class="form-label small text-muted">ID</label>
+                  <input type="text" class="form-control form-control-sm" id="detalle-producto-id" readonly>
+                </div>
+                <div class="col-md-9 mb-3">
+                  <label class="form-label small text-muted">Nombre</label>
+                  <input type="text" class="form-control" id="detalle-producto-nombre">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">SKU</label>
+                  <input type="text" class="form-control" id="detalle-producto-sku">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">Disponible</label>
+                  <select class="form-select" id="detalle-producto-available">
+                    <option value="true">Sí (Activo)</option>
+                    <option value="false">No (Inactivo)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">Precio</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="detalle-producto-precio" step="0.01">
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label small text-muted">Stock</label>
+                  <input type="number" class="form-control" id="detalle-producto-stock">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label small text-muted">Descripción</label>
+                <textarea class="form-control" id="detalle-producto-descripcion" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-success" onclick="guardarCambios()">
+            <i class="bi bi-check-lg"></i> Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="cambiarFotoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Actualizar Imagen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div class="mb-3">
+            <input type="file" class="form-control" id="nueva-foto" accept="image/*">
+          </div>
+          <div id="nueva-foto-preview"
+            style="min-height: 150px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px;">
+            <span class="text-muted">Vista previa</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="guardarNuevaFoto()">Subir Foto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script>
+    // Variables Globales
+    let allProducts = []; // Para almacenar los productos y filtrar localmente
+    let productoActual = null;
+
+    // --- Autenticación ---
+    function checkAuth() {
+      if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
+        window.location.href = '/front/login.html';
+      }
+      document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/front/login.html';
+    }
+
+    // --- Notificaciones ---
+    function showMessage(message, type = 'info') {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show fixed-top m-3 shadow`;
+      alertDiv.style.zIndex = '9999';
+      alertDiv.style.maxWidth = '400px';
+      alertDiv.style.left = 'auto';
+      alertDiv.style.right = '20px';
+
+      alertDiv.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-2"></i>
+            <div>${message}</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      document.body.appendChild(alertDiv);
+      setTimeout(() => alertDiv.remove(), 4000);
+    }
+
+    // --- Utilidad Base64 ---
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // --- Cargar Productos (API) ---
+    async function loadProductos() {
+      const tbody = document.getElementById('productos-table-body');
+
+      try {
+        allProducts = await ProductAPI.list(); // Obtener de API
+        renderTable(allProducts); // Pintar tabla
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-danger">
+                    <i class="bi bi-wifi-off fs-1 d-block mb-2"></i>
+                    No se pudieron cargar los productos. Revisa tu conexión.
+                </td>
+            </tr>`;
+      }
+    }
+
+    // --- Renderizar Tabla ---
+    function renderTable(products) {
+      const tbody = document.getElementById('productos-table-body');
+      tbody.innerHTML = '';
+
+      if (products.length === 0) {
+        tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-box fs-1 d-block mb-2" style="opacity:0.3"></i>
+                        No se encontraron productos.
+                    </td>
+                </tr>`;
+        return;
+      }
+
+      products.forEach(producto => {
+        const row = document.createElement('tr');
+
+        // Lógica de colores para stock
+        let stockBadge = 'bg-success';
+        if (producto.stock <= 10) stockBadge = 'bg-warning text-dark';
+        if (producto.stock === 0) stockBadge = 'bg-danger';
+
+        // Buscar el producto original en el array global para pasar el índice correcto al editar
+        const originalIndex = allProducts.findIndex(p => p.id === producto.id);
+
+        row.innerHTML = `
+                <td class="text-center fw-bold text-muted">#${producto.id}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            ${producto.photoBase64
+            ? `<img src="data:image/jpeg;base64,${producto.photoBase64}" style="width:100%; height:100%; object-fit:cover; border-radius:4px;">`
+            : '<i class="bi bi-box-seam text-primary"></i>'}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">${producto.name}</div>
+                            <small class="text-muted" style="font-size: 0.8rem;">${producto.description || 'Sin descripción'}</small>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge bg-light text-dark border">${producto.sku}</span></td>
+                <td class="fw-bold text-primary">$${producto.price.toFixed(2)}</td>
+                <td><span class="badge ${stockBadge} rounded-pill">${producto.stock} un.</span></td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="verDetalleProducto(${originalIndex})" title="Editar">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${producto.id})" title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // --- Filtros en Tiempo Real ---
+    function filterProducts() {
+      const term = document.getElementById('filtro-nombre').value.toLowerCase();
+      const minPrice = parseFloat(document.getElementById('filtro-precio-min').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('filtro-precio-max').value) || Infinity;
+
+      const filtered = allProducts.filter(p => {
+        const matchesName = p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+        const matchesPrice = p.price >= minPrice && p.price <= maxPrice;
+        return matchesName && matchesPrice;
+      });
+
+      renderTable(filtered);
+    }
+
+    // --- Crear Producto ---
+    document.getElementById('newProductoForm')?.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const btn = this.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+      btn.disabled = true;
+
+      try {
+        const fotoFile = document.getElementById('foto').files[0];
+        let photoBase64 = fotoFile ? await fileToBase64(fotoFile) : null;
+
+        const product = {
+          name: document.getElementById('nombre').value,
+          sku: document.getElementById('sku').value,
+          price: parseFloat(document.getElementById('precio').value),
+          stock: parseInt(document.getElementById('stock').value),
+          description: document.getElementById('descripcion').value,
+          photoBase64: photoBase64,
+          available: true
+        };
+
+        await ProductAPI.create(product);
+        showMessage('Producto creado correctamente', 'success');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('newProductoModal'));
+        modal.hide();
+        this.reset();
+        document.getElementById('foto-preview').innerHTML = '';
+
+        await loadProductos();
+      } catch (error) {
+        showMessage('Error: ' + (error.message || 'Desconocido'), 'danger');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
+
+    // --- Ver / Editar Detalle ---
+    function verDetalleProducto(index) {
+      const producto = allProducts[index];
+      productoActual = { ...producto };
+
+      // Llenar campos
+      document.getElementById('detalle-producto-id').value = producto.id;
+      document.getElementById('detalle-producto-nombre').value = producto.name;
+      document.getElementById('detalle-producto-sku').value = producto.sku;
+      document.getElementById('detalle-producto-precio').value = producto.price;
+      document.getElementById('detalle-producto-stock').value = producto.stock;
+      document.getElementById('detalle-producto-descripcion').value = producto.description || '';
+      document.getElementById('detalle-producto-available').value = String(producto.available);
+
+      // Foto
+      const detalleFotoDiv = document.getElementById('detalle-foto');
+      if (producto.photoBase64) {
+        detalleFotoDiv.style.backgroundImage = `url(data:image/jpeg;base64,${producto.photoBase64})`;
+        detalleFotoDiv.innerHTML = '';
+      } else {
+        detalleFotoDiv.style.backgroundImage = 'none';
+        detalleFotoDiv.innerHTML = `<i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>`;
+      }
+
+      // Generar QR en el modal
+      const qrContainer = document.getElementById('detalle-qr');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, {
+        text: `${producto.name}|${producto.sku}`,
+        width: 100,
+        height: 100
+      });
+
+      const modal = new bootstrap.Modal(document.getElementById('detalleProductoModal'));
+      modal.show();
+    }
+
+    // --- Guardar Edición ---
+    async function guardarCambios() {
+      if (!productoActual) return;
+
+      // Leer el ID del campo del formulario (más confiable)
+      const id = document.getElementById('detalle-producto-id').value;
+
+      if (!id) {
+        showMessage('Error: ID de producto no encontrado', 'danger');
+        return;
+      }
+
+      const updatedProduct = {
+        name: document.getElementById('detalle-producto-nombre').value,
+        sku: document.getElementById('detalle-producto-sku').value,
+        price: parseFloat(document.getElementById('detalle-producto-precio').value),
+        stock: parseInt(document.getElementById('detalle-producto-stock').value),
+        description: document.getElementById('detalle-producto-descripcion').value,
+        available: document.getElementById('detalle-producto-available').value === 'true',
+        photoBase64: productoActual.photoBase64
+      };
+
+      try {
+        await ProductAPI.update(id, updatedProduct);
+        showMessage('Producto actualizado', 'success');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('detalleProductoModal'));
+        modal.hide();
+        await loadProductos();
+      } catch (error) {
+        showMessage('Error al actualizar: ' + error.message, 'danger');
+      }
+    }
+
+    // --- Cambiar Foto ---
+    async function guardarNuevaFoto() {
+      const file = document.getElementById('nueva-foto').files[0];
+      if (!file || !productoActual) return;
+
+      try {
+        const base64Image = await fileToBase64(file);
+        productoActual.photoBase64 = base64Image;
+
+        // Actualizar visualmente el modal de detalle
+        const detalleFotoDiv = document.getElementById('detalle-foto');
+        detalleFotoDiv.style.backgroundImage = `url(data:image/jpeg;base64,${base64Image})`;
+        detalleFotoDiv.innerHTML = '';
+
+        // Cerrar modal de foto
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cambiarFotoModal'));
+        modal.hide();
+
+        // Reabrir modal de detalle (truco de UX)
+        // new bootstrap.Modal(document.getElementById('detalleProductoModal')).show();
+
+      } catch (error) {
+        showMessage('Error al procesar imagen', 'danger');
+      }
+    }
+
+    // --- Preview Fotos ---
+    function handlePreview(inputId, divId) {
+      const file = document.getElementById(inputId).files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById(divId).innerHTML = `<img src="${e.target.result}" style="max-width:100px; max-height:100px; border-radius:4px;">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    document.getElementById('foto')?.addEventListener('change', () => handlePreview('foto', 'foto-preview'));
+    document.getElementById('nueva-foto')?.addEventListener('change', () => handlePreview('nueva-foto', 'nueva-foto-preview'));
+
+    // --- Eliminar ---
+    async function eliminarProducto(id) {
+      if (confirm('¿Estás seguro de eliminar este producto?')) {
+        try {
+          await ProductAPI.delete(id);
+          showMessage('Producto eliminado', 'warning');
+          await loadProductos();
+        } catch (error) {
+          showMessage('No se pudo eliminar', 'danger');
+        }
+      }
+    }
+
+    // Event Listeners Filtros
+    document.getElementById('filtro-nombre').addEventListener('input', filterProducts);
+    document.getElementById('filtro-precio-min').addEventListener('input', filterProducts);
+    document.getElementById('filtro-precio-max').addEventListener('input', filterProducts);
+
+    // Inicializar
+    checkAuth();
+    loadProductos();
+  </script>
+</body>
+
+</html>

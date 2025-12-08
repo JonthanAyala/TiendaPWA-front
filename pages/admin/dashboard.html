@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="/front/manifest.json">
+  <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  
+  <title>Dashboard Admin</title>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
+      <h4>Tienda UCQ</h4>
+    </div>
+    <div class="sidebar-menu">
+      <a href="/front/pages/admin/dashboard.html" class="active">
+        <i class="bi bi-speedometer2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/front/pages/admin/pedidos.html">
+        <i class="bi bi-box-seam"></i>
+        <span>Pedidos</span>
+      </a>
+      <a href="/front/pages/admin/productos.html">
+        <i class="bi bi-box"></i>
+        <span>Productos</span>
+      </a>
+      <a href="/front/pages/admin/tiendas.html">
+        <i class="bi bi-shop"></i>
+        <span>Tiendas</span>
+      </a>
+      <a href="/front/pages/admin/repartidores.html">
+        <i class="bi bi-person-badge"></i>
+        <span>Repartidores</span>
+      </a>
+      <a href="/front/pages/admin/notificaciones.html">
+        <i class="bi bi-bell"></i>
+        <span>Notificaciones</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+      <div>
+        <span class="badge bg-info me-3" id="user-badge">Admin</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
+          <i class="bi bi-box-arrow-right"></i> Salir
+        </button>
+      </div>
+    </div>
+
+    <div class="container-fluid p-4">
+      
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="stat-card bg-white p-3 rounded shadow-sm border-start border-4 border-primary">
+            <i class="bi bi-box-seam text-primary mb-2" style="font-size: 2rem;"></i>
+            <h3 class="fw-bold" id="stat-total">...</h3>
+            <p class="text-muted mb-0">Pedidos Totales</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white p-3 rounded shadow-sm border-start border-4 border-success">
+            <i class="bi bi-check-circle text-success mb-2" style="font-size: 2rem;"></i>
+            <h3 class="fw-bold" id="stat-completados">...</h3>
+            <p class="text-muted mb-0">Completados</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white p-3 rounded shadow-sm border-start border-4 border-warning">
+            <i class="bi bi-hourglass-split text-warning mb-2" style="font-size: 2rem;"></i>
+            <h3 class="fw-bold" id="stat-proceso">...</h3>
+            <p class="text-muted mb-0">En Proceso</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="stat-card bg-white p-3 rounded shadow-sm border-start border-4 border-danger">
+            <i class="bi bi-exclamation-circle text-danger mb-2" style="font-size: 2rem;"></i>
+            <h3 class="fw-bold" id="stat-pendientes">...</h3>
+            <p class="text-muted mb-0">Pendientes</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Últimos Pedidos</h5>
+              <a href="/front/pages/admin/pedidos.html" class="btn btn-sm btn-outline-primary">Ver todos</a>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-orders-body">
+                  <tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Repartidores Recientes</h5>
+              <a href="/front/pages/admin/repartidores.html" class="btn btn-sm btn-outline-primary">Gestionar</a>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-repartidores-body">
+                  <tr><td colspan="3" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="/front/js/api.js"></script>
+  <script src="/front/js/app.js"></script>
+  <script src="/front/js/offline.js"></script>
+
+  <script>
+    function checkAuth() { 
+      if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
+        window.location.href = '/front/login.html'; 
+      }
+      document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
+    }
+    
+    function logout() { localStorage.clear(); window.location.href = '/front/login.html'; }
+
+    // Helpers
+    function getStatusBadge(status) {
+        let color = 'secondary';
+        if (status === 'COMPLETADO' || status === 'DELIVERED') color = 'success';
+        if (status === 'EN_PROCESO' || status === 'SENT') color = 'warning';
+        if (status === 'PENDIENTE' || status === 'CREATED') color = 'danger';
+        return `<span class="badge bg-${color} rounded-pill">${status}</span>`;
+    }
+
+    async function loadDashboardData() {
+        // 1. Cargar Pedidos y Calcular Estadísticas
+        try {
+            const orders = await OrderAPI.list();
+            
+            // Contadores
+            const total = orders.length;
+            const completados = orders.filter(o => o.status === 'COMPLETADO' || o.status === 'DELIVERED').length;
+            const proceso = orders.filter(o => o.status === 'EN_PROCESO' || o.status === 'SENT').length;
+            const pendientes = orders.filter(o => o.status === 'PENDIENTE' || o.status === 'CREATED').length;
+
+            // Actualizar DOM Stats
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-completados').textContent = completados;
+            document.getElementById('stat-proceso').textContent = proceso;
+            document.getElementById('stat-pendientes').textContent = pendientes;
+
+            // Tabla Últimos Pedidos (Top 5 más recientes)
+            // Asumimos que vienen en orden o invertimos si es necesario. 
+            // Si la API no ordena, podemos hacer .reverse() o ordenar por ID.
+            const recentOrders = orders.slice(-5).reverse(); 
+            const ordersBody = document.getElementById('dashboard-orders-body');
+            ordersBody.innerHTML = '';
+
+            if (recentOrders.length === 0) {
+                ordersBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Sin pedidos recientes</td></tr>';
+            } else {
+                recentOrders.forEach(order => {
+                    const row = `
+                        <tr>
+                            <td class="fw-bold">#${order.id}</td>
+                            <td>${order.clientName || 'Cliente'}</td>
+                            <td>$${(order.totalPrice || 0).toFixed(2)}</td>
+                            <td>${getStatusBadge(order.status)}</td>
+                        </tr>
+                    `;
+                    ordersBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+        } catch (error) {
+            console.error("Error loading orders:", error);
+            document.getElementById('dashboard-orders-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando pedidos</td></tr>';
+        }
+
+        // 2. Cargar Repartidores
+        try {
+            const users = await UserAPI.list();
+            const repartidores = users.filter(u => u.role === 'REPARTIDOR').slice(0, 5); // Solo los primeros 5
+            
+            const repBody = document.getElementById('dashboard-repartidores-body');
+            repBody.innerHTML = '';
+
+            if (repartidores.length === 0) {
+                repBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No hay repartidores</td></tr>';
+            } else {
+                repartidores.forEach(rep => {
+                    const row = `
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-1 me-2"><i class="bi bi-person"></i></div>
+                                    ${rep.name}
+                                </div>
+                            </td>
+                            <td class="text-muted small">${rep.email}</td>
+                            <td><span class="badge bg-info bg-opacity-10 text-info border border-info">Repartidor</span></td>
+                        </tr>
+                    `;
+                    repBody.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+        } catch (error) {
+            console.error("Error loading users:", error);
+            document.getElementById('dashboard-repartidores-body').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error cargando repartidores</td></tr>';
+        }
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadDashboardData();
+    });
+  </script>
+</body>
+</html>

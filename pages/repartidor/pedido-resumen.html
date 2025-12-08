@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen del Pedido</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/front/css/admin.css">
+  <style>
+      body { padding-bottom: 90px; background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+      .card { border: none; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+      .bg-gradient-primary { background: linear-gradient(135deg, #f47b25 0%, #d96a1a 100%); }
+  </style>
+</head>
+<body>
+  
+  <div class="bg-gradient-primary text-white p-3 pb-5">
+      <div class="d-flex align-items-center">
+          <a href="javascript:history.back()" class="text-white me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+          <h5 class="mb-0 fw-bold">Detalle de Entrega</h5>
+      </div>
+  </div>
+
+  <div class="container" style="margin-top: -30px;">
+    
+    <div id="loading" class="text-center py-5 bg-white rounded shadow-sm">
+        <div class="spinner-border text-warning" role="status"></div>
+        <p class="mt-2 text-muted">Cargando detalles...</p>
+    </div>
+
+    <div id="order-content" style="display: none;">
+        
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-1 text-uppercase small fw-bold">Pedido #<span id="order-id"></span></h6>
+                <h1 class="fw-bold mb-0 text-dark" id="order-total">$0.00</h1>
+                <span class="badge bg-warning text-dark mt-2 px-3 py-2 rounded-pill" id="order-status">PENDIENTE</span>
+            </div>
+        </div>
+
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-light rounded-circle p-3 me-3">
+                    <i class="bi bi-person-fill fs-4 text-secondary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold" id="client-name">Nombre Cliente</h6>
+                    <small class="text-muted">Cliente Final</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body d-flex align-items-center">
+                <div class="bg-light rounded-circle p-3 me-3">
+                    <i class="bi bi-shop fs-4 text-secondary"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold" id="store-name">Tienda</h6>
+                    <small class="text-muted">Punto de Retiro</small>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="text-muted ms-2 mb-2 text-uppercase small fw-bold">Productos</h6>
+        <div class="card mb-3 shadow-sm">
+            <div class="list-group list-group-flush rounded-3" id="products-list">
+                </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="fixed-bottom bg-white border-top p-3 shadow-lg">
+    <div class="row g-2">
+        <div class="col-12">
+            <button id="btn-entregar" class="btn btn-success w-100 py-3 fw-bold shadow" onclick="marcarEntregado()">
+                <i class="bi bi-box-seam me-2"></i> CONFIRMAR ENTREGA
+            </button>
+        </div>
+    </div>
+  </div>
+
+  <script src="/front/js/api.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get('id');
+    let currentOrder = null;
+
+    async function loadOrder() {
+        if(!orderId) {
+            alert("No se especificó un pedido.");
+            window.location.href = '/front/pages/repartidor/pedidos.html';
+            return;
+        }
+
+        try {
+            const orders = await OrderAPI.list();
+            // Buscar el pedido por ID (convertir a string por si acaso)
+            currentOrder = orders.find(o => o.id == orderId);
+
+            if(currentOrder) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('order-content').style.display = 'block';
+
+                document.getElementById('order-id').textContent = currentOrder.id;
+                document.getElementById('order-total').textContent = `$${(currentOrder.totalPrice || 0).toFixed(2)}`;
+                document.getElementById('order-status').textContent = currentOrder.status;
+                
+                // Actualizar color del badge según estado
+                const badge = document.getElementById('order-status');
+                if(currentOrder.status === 'COMPLETADO') {
+                    badge.className = 'badge bg-success mt-2 px-3 py-2 rounded-pill';
+                    badge.textContent = 'ENTREGADO';
+                    document.getElementById('btn-entregar').disabled = true;
+                    document.getElementById('btn-entregar').textContent = 'YA ENTREGADO';
+                } else if (currentOrder.status === 'EN_PROCESO') {
+                    badge.className = 'badge bg-info text-dark mt-2 px-3 py-2 rounded-pill';
+                    badge.textContent = 'EN RUTA';
+                }
+
+                document.getElementById('client-name').textContent = currentOrder.clientName || 'Anónimo';
+                document.getElementById('store-name').textContent = currentOrder.store?.name || 'Tienda desconocida';
+
+                // Renderizar productos
+                const list = document.getElementById('products-list');
+                list.innerHTML = '';
+                
+                if (currentOrder.items && currentOrder.items.length > 0) {
+                    currentOrder.items.forEach(item => {
+                        const html = `
+                            <div class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3 text-center" style="width: 50px;">
+                                        <i class="bi bi-bag text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">${item.product?.name || 'Producto'}</h6>
+                                        <small class="text-muted">$${(item.price || 0).toFixed(2)} c/u</small>
+                                    </div>
+                                </div>
+                                <span class="badge bg-secondary rounded-pill">x${item.quantity}</span>
+                            </div>
+                        `;
+                        list.insertAdjacentHTML('beforeend', html);
+                    });
+                } else {
+                    list.innerHTML = '<div class="p-4 text-center text-muted">No hay detalles de productos disponibles.</div>';
+                }
+            } else {
+                alert("Pedido no encontrado.");
+                window.location.href = '/front/pages/repartidor/pedidos.html';
+            }
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loading').innerHTML = '<p class="text-danger">Error de conexión al cargar el pedido.</p>';
+        }
+    }
+
+    async function marcarEntregado() {
+        if(!currentOrder) return;
+        
+        // Confirmación
+        if(!confirm("¿Confirmar que has entregado el pedido al cliente?")) return;
+
+        const btn = document.getElementById('btn-entregar');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        btn.disabled = true;
+
+        try {
+            // Enviamos SOLO lo necesario para actualizar el estado
+            const updatePayload = {
+                id: currentOrder.id,
+                status: 'COMPLETADO'
+            };
+            
+            // Llamada al backend
+            await OrderAPI.update(currentOrder.id, updatePayload);
+            
+            // Éxito
+            // Usamos un alert nativo simple porque en móvil funciona bien
+            alert("✅ ¡Pedido entregado con éxito!");
+            
+            // Volver a la lista de pedidos
+            window.location.href = '/front/pages/repartidor/pedidos.html'; 
+            
+        } catch (error) {
+            console.error(error);
+            alert("❌ Error al actualizar el estado del pedido.");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // Iniciar carga
+    loadOrder();
+  </script>
+</body>
+</html>

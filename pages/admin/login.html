@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Inicio de Sesión del Administrador</title>
+<meta name="manifest" content="/front/manifest.json">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link rel="stylesheet" href="/front/css/admin.css">
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0D6EFD",
+              "background-light": "#F8F9FA",
+              "background-dark": "#181A1B",
+              "text-light": "#212529",
+              "text-dark": "#E8E6E3",
+              "placeholder-light": "#6c757d",
+              "placeholder-dark": "#a0a0a0",
+              "border-light": "#CED4DA",
+              "border-dark": "#4a4a4a"
+            },
+            fontFamily: {
+              "display": ["Work Sans", "sans-serif"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.75rem",
+                "lg": "1rem",
+                "xl": "1.5rem",
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col items-center justify-center p-4 group/design-root overflow-x-hidden">
+<div class="flex w-full max-w-md flex-col items-center">
+<!-- Logo -->
+<div class="mb-8 flex h-16 w-16 items-center justify-center rounded-lg bg-primary/20 dark:bg-primary/30">
+<span class="material-symbols-outlined text-primary text-4xl">shield_person</span>
+</div>
+<!-- Headline and Body Text -->
+<div class="w-full text-center mb-8">
+<h1 class="text-text-light dark:text-text-dark tracking-tight text-[32px] font-bold leading-tight">Acceso para Administradores</h1>
+<p class="text-placeholder-light dark:text-placeholder-dark text-base font-normal leading-normal pt-2">Bienvenido de vuelta. Por favor, inicie sesión.</p>
+</div>
+<!-- Form -->
+<div class="flex w-full flex-col gap-4">
+<!-- Email Field -->
+<div class="flex w-full flex-col">
+<label class="text-text-light dark:text-text-dark text-base font-medium leading-normal pb-2" for="email">Email</label>
+<div class="relative flex w-full items-center">
+<span class="material-symbols-outlined text-placeholder-light dark:text-placeholder-dark absolute left-4">mail</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-white dark:bg-background-dark h-14 placeholder:text-placeholder-light dark:placeholder:text-placeholder-dark pl-12 pr-4 text-base font-normal leading-normal" id="email" placeholder="correo@ejemplo.com" type="email" value=""/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="flex w-full flex-col">
+<label class="text-text-light dark:text-text-dark text-base font-medium leading-normal pb-2" for="password">Contraseña</label>
+<div class="relative flex w-full items-center">
+<span class="material-symbols-outlined text-placeholder-light dark:text-placeholder-dark absolute left-4">lock</span>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-border-light dark:border-border-dark bg-white dark:bg-background-dark h-14 placeholder:text-placeholder-light dark:placeholder:text-placeholder-dark pl-12 pr-12 text-base font-normal leading-normal" id="password" placeholder="Introduce tu contraseña" type="password" value=""/>
+<button class="absolute right-4 text-placeholder-light dark:text-placeholder-dark" data-icon="Eye" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<!-- Forgot Password Link -->
+<div class="w-full text-right mt-1">
+<a class="text-primary text-sm font-medium leading-normal underline" href="#">¿Olvidaste tu contraseña?</a>
+</div>
+<!-- Login Button -->
+<div class="w-full pt-4">
+<button class="flex h-14 w-full items-center justify-center rounded-lg bg-primary px-4 text-center text-base font-semibold leading-normal text-white transition-colors hover:bg-primary/90">Iniciar Sesión</button>
+</div>
+</div>
+<!-- Footer Text -->
+<div class="mt-12 text-center">
+<p class="text-placeholder-light dark:text-placeholder-dark text-xs font-normal">© 2024 PWA Solutions Inc. Todos los derechos reservados.</p>
+</div>
+</div>
+</div>
+<button id="install-app-button" class="btn btn-primary" style="position:fixed;bottom:20px;right:20px;z-index:1000;display:none;">⬇️ Instalar</button>
+<script src="/front/js/app.js"></script>
+<script src="/front/js/offline.js"></script>
+</body>
+</html>

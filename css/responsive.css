@@ -1,0 +1,285 @@
+/* Responsive Design */
+
+/* Extra small devices (320px and up) */
+@media (min-width: 320px) {
+  html {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 0.5rem;
+  }
+
+  header h1 {
+    font-size: 1.25rem;
+  }
+
+  main {
+    padding: 1rem 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  nav ul {
+    flex-wrap: nowrap;
+  }
+
+  nav a {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  button, .btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Small devices (576px and up) */
+@media (min-width: 576px) {
+  html {
+    font-size: 15px;
+  }
+
+  header {
+    padding: 1.25rem;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  main {
+    padding: 1.5rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  nav a {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  table {
+    font-size: 0.95rem;
+  }
+
+  th, td {
+    padding: 0.875rem;
+  }
+
+  button, .btn {
+    padding: 0.675rem 1.25rem;
+  }
+}
+
+/* Medium devices (768px and up) */
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+
+  body.pwa-installed {
+    padding-bottom: 0;
+  }
+
+  header {
+    padding: 1.5rem;
+  }
+
+  main {
+    padding: 2rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  nav {
+    position: static;
+    top: auto;
+  }
+
+  nav a {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  button, .btn {
+    padding: 0.75rem 1.5rem;
+  }
+
+  #install-app-button {
+    display: flex !important;
+  }
+}
+
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+  .sidebar {
+    width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  main {
+    margin-left: 250px;
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+/* Extra large devices (1200px and up) */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+
+  .grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Landscape orientation */
+@media (orientation: landscape) and (max-height: 500px) {
+  header {
+    padding: 0.75rem 1rem;
+  }
+
+  header h1 {
+    font-size: 1.25rem;
+  }
+
+  main {
+    padding: 0.75rem 1rem;
+  }
+
+  nav a {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+}
+
+/* Notch support (iPhone X, etc.) */
+@supports (padding: max(0px)) {
+  header {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  footer {
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+
+  body.pwa-installed nav {
+    padding-bottom: max(0, env(safe-area-inset-bottom));
+  }
+}
+
+/* Print styles */
+@media print {
+  header, footer, nav, .no-print {
+    display: none;
+  }
+
+  body {
+    background: white;
+  }
+
+  .card {
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+}
+
+/* Dark mode support (opcional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dark-color: #f9fafb;
+    --light-color: #1f2937;
+    --border-color: #374151;
+  }
+
+  body {
+    background-color: #111827;
+    color: var(--dark-color);
+  }
+
+  .card, table {
+    background-color: #1f2937;
+    color: var(--dark-color);
+  }
+
+  input, textarea, select {
+    background-color: #374151;
+    color: var(--dark-color);
+    border-color: #4b5563;
+  }
+
+  nav {
+    background-color: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  nav a:hover {
+    background-color: #374151;
+  }
+
+  tr:hover {
+    background-color: #374151;
+  }
+}
+
+/* Reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

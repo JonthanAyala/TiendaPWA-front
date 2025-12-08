@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Nuevo Usuario - Tienda UCQ</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #f47b25; /* Color naranja para repartidores */
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #7c3aed 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 1rem;
+        }
+
+        .card-user {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 700px; /* Un poco más ancho */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-user::top {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        }
+
+        .card-header-user { text-align: center; margin-bottom: 2rem; }
+        .card-header-user h2 { color: #1f2937; font-weight: 800; }
+        
+        .form-label { font-weight: 600; color: #4b5563; font-size: 0.9rem; }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Estilo dinámico para el botón según el rol */
+        .btn-create {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-top: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-create:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+
+        .btn-create.repartidor-mode {
+            background: var(--secondary-color);
+            box-shadow: 0 5px 15px rgba(244, 123, 37, 0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: white; }
+
+        /* Animación para el campo de tienda */
+        .store-selection {
+            display: none;
+            animation: slideDown 0.3s ease-out forwards;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container d-flex flex-column align-items-center">
+        <div class="card-user">
+            <div class="card-header-user">
+                <i class="bi bi-person-badge-fill" style="font-size: 3rem; color: var(--primary-color);" id="header-icon"></i>
+                <h2>Registrar Usuario</h2>
+                <p class="text-muted">Ingresa los datos para dar de alta en el sistema.</p>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <form id="create-user-form">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" placeholder="Ej. Juan Pérez" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" placeholder="nombre@ejemplo.com" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="confirm-password" required>
+                        <div class="invalid-feedback">Las contraseñas no coinciden.</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Rol del Usuario <span class="text-danger">*</span></label>
+                        <select class="form-select" id="role" required onchange="toggleStoreField()">
+                            <option value="" disabled selected>Selecciona...</option>
+                            <option value="ADMIN">Administrador</option>
+                            <option value="REPARTIDOR">Repartidor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 store-selection" id="store-container">
+                        <label class="form-label">Asignar Tienda Base <span class="text-danger">*</span></label>
+                        <select class="form-select" id="store">
+                            <option value="" disabled selected>Cargando tiendas...</option>
+                        </select>
+                        <small class="text-muted">El repartidor pertenecerá a esta tienda.</small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-create" id="submit-btn">
+                    <i class="bi bi-check-lg me-2"></i> Crear Usuario
+                </button>
+            </form>
+        </div>
+
+        <div class="mt-3">
+            <a href="/front/login.html" class="back-link me-4"><i class="bi bi-arrow-left"></i> Ir al Login</a>
+            <a href="/front/pages/admin/dashboard.html" class="back-link"><i class="bi bi-speedometer2"></i> Ir al Dashboard</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="/front/js/api.js"></script> <script>
+        // 1. Cargar Tiendas al iniciar
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const stores = await StoreAPI.list(); // Llama a tu API
+                const select = document.getElementById('store');
+                select.innerHTML = '<option value="" disabled selected>Selecciona una tienda...</option>';
+                
+                stores.forEach(store => {
+                    const option = document.createElement('option');
+                    option.value = store.id;
+                    option.textContent = `${store.name} (${store.city})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error cargando tiendas:", error);
+                document.getElementById('store').innerHTML = '<option disabled>Error al cargar tiendas</option>';
+            }
+        });
+
+        // 2. Lógica Visual: Mostrar/Ocultar campo Tienda y cambiar colores
+        function toggleStoreField() {
+            const role = document.getElementById('role').value;
+            const storeContainer = document.getElementById('store-container');
+            const btn = document.getElementById('submit-btn');
+            const icon = document.getElementById('header-icon');
+            const storeSelect = document.getElementById('store');
+
+            if (role === 'REPARTIDOR') {
+                storeContainer.style.display = 'block';
+                storeSelect.setAttribute('required', 'required'); // Hacerlo obligatorio
+                
+                // Estilo visual
+                btn.classList.add('repartidor-mode');
+                icon.style.color = 'var(--secondary-color)';
+                btn.innerHTML = '<i class="bi bi-bicycle me-2"></i> Registrar Repartidor';
+            } else {
+                storeContainer.style.display = 'none';
+                storeSelect.removeAttribute('required');
+                
+                // Estilo visual
+                btn.classList.remove('repartidor-mode');
+                icon.style.color = 'var(--primary-color)';
+                btn.innerHTML = '<i class="bi bi-shield-check me-2"></i> Registrar Admin';
+            }
+        }
+
+        // 3. Manejo del Formulario
+        document.getElementById('create-user-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const pass = document.getElementById('password').value;
+            const confirmPass = document.getElementById('confirm-password').value;
+            const alertContainer = document.getElementById('alert-container');
+            const btn = document.getElementById('submit-btn');
+
+            alertContainer.innerHTML = ''; // Limpiar alertas
+
+            // Validación de contraseñas
+            if (pass !== confirmPass) {
+                document.getElementById('confirm-password').classList.add('is-invalid');
+                showAlert('danger', 'Las contraseñas no coinciden.');
+                return;
+            } else {
+                document.getElementById('confirm-password').classList.remove('is-invalid');
+            }
+
+            // Preparar datos
+            const role = document.getElementById('role').value;
+            const userData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: pass,
+                role: role
+            };
+
+            // Loading state
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+            btn.disabled = true;
+
+            try {
+                // A) Crear Usuario
+                const createdUser = await UserAPI.create(userData);
+                let successMsg = `Usuario <strong>${createdUser.name}</strong> creado exitosamente.`;
+
+                // B) Si es Repartidor y se seleccionó tienda, asignar tienda
+                if (role === 'REPARTIDOR') {
+                    const storeId = document.getElementById('store').value;
+                    if (storeId) {
+                        await UserAPI.assignStore(createdUser.id, storeId);
+                        successMsg += ' Y tienda asignada correctamente.';
+                    }
+                }
+
+                showAlert('success', successMsg);
+                this.reset(); // Limpiar formulario
+                toggleStoreField(); // Resetear vista
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message || 'Error desconocido';
+                if(error.message.includes('409')) msg = 'El correo ya está registrado.';
+                showAlert('danger', 'Error: ' + msg);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        function showAlert(type, message) {
+            const container = document.getElementById('alert-container');
+            const color = type === 'success' ? 'var(--success-color)' : 'var(--danger-color)';
+            
+            container.innerHTML = `
+                <div class="alert alert-${type} d-flex align-items-center shadow-sm" role="alert" style="border-left: 5px solid ${color}; background-color: #fff;">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}-fill me-3" style="font-size: 1.5rem; color: ${color};"></i>
+                    <div>${message}</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

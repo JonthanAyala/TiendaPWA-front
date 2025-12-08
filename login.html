@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tienda UCQ - Login">
+    <meta name="theme-color" content="#2563eb">
+    
+    <link rel="manifest" href="/front/manifest.json">
+    <link rel="apple-touch-icon" href="/front/assets/icons/icon-192x192.png">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/front/css/admin.css">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #f47b25;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a365d 0%, #2563eb 50%, #7c3aed 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(244, 123, 37, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3),
+                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            padding: 3.5rem 2rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .login-header .logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .login-header p {
+            opacity: 0.95;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .login-body {
+            padding: 2.5rem 2rem;
+        }
+
+        .role-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .role-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .role-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .role-tab.active.repartidor {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+        }
+
+        .role-tab i {
+            font-size: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            color: var(--primary-color);
+        }
+
+        .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 0.85rem 1.2rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+            outline: none;
+            background: white;
+        }
+
+        .form-control.repartidor:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(244, 123, 37, 0.15);
+        }
+
+        .input-group-text {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-left: none;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .remember-forgot a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .remember-forgot a:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            color: white;
+        }
+
+        .btn-login.admin {
+            background: linear-gradient(135deg, var(--primary-color), #1e40af);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-login.admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-login.repartidor {
+            background: linear-gradient(135deg, var(--secondary-color), #d85c1e);
+            box-shadow: 0 4px 6px rgba(244, 123, 37, 0.2);
+        }
+
+        .btn-login.repartidor:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(244, 123, 37, 0.3);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: 2px solid rgba(37, 99, 235, 0.2);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+
+        .alert i {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            color: var(--primary-color);
+        }
+
+        .alert-info {
+            border-color: rgba(37, 99, 235, 0.3);
+            color: #1e40af;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 1.5rem;
+        }
+
+        .footer-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .footer-text a:hover {
+            color: #1e40af;
+            text-decoration: underline;
+        }
+
+        .role-content {
+            display: none;
+        }
+
+        .role-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        @media (max-width: 576px) {
+            .login-container { padding: 1rem; }
+            .login-header { padding: 2rem 1.5rem 1.5rem; }
+            .login-header .logo { font-size: 2.5rem; }
+            .login-header h1 { font-size: 1.5rem; }
+            .login-body { padding: 1.5rem; }
+            .role-tab { padding: 0.75rem; font-size: 0.9rem; }
+        }
+    </style>
+    
+    <title>Tienda UCQ - Ingresar</title>
+</head>
+<body>
+    <div class="login-container">
+        <a href="/front/index.html" class="back-button">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo">🏪</div>
+                <h1>Tienda UCQ</h1>
+                <p>Sistema de Gestión de Entregas</p>
+            </div>
+
+            <div class="login-body">
+                <div class="role-tabs">
+                    <button class="role-tab active admin" data-role="admin">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Admin</span>
+                    </button>
+                    <button class="role-tab repartidor" data-role="repartidor">
+                        <i class="bi bi-pin-map"></i>
+                        <span>Repartidor</span>
+                    </button>
+                </div>
+
+                <div class="role-content admin active">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Demo Admin</strong><br>
+                            Usuario: admin@example.com<br>
+                            Contraseña: admin123
+                        </div>
+                    </div>
+
+                    <form id="admin-form">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-envelope"></i> Correo Electrónico
+                            </label>
+                            <input type="email" class="form-control" id="admin-email" placeholder="Tu correo" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-lock"></i> Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="admin-password" placeholder="Tu contraseña" required>
+                                <span class="input-group-text password-toggle" onclick="togglePassword('admin-password')">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="remember-forgot">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" checked> Recuérdame
+                            </label>
+                            <a href="#">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="btn-login admin">
+                            <i class="bi bi-box-arrow-in-right"></i> Ingresar como Admin
+                        </button>
+                    </form>
+                </div>
+
+                <div class="role-content repartidor">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Demo Repartidor</strong><br>
+                            Usuario: rep1@example.com<br>
+                            Contraseña: rep123
+                        </div>
+                    </div>
+
+                    <form id="repartidor-form">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-telephone"></i> Teléfono o Correo
+                            </label>
+                            <input type="text" class="form-control" id="repartidor-phone" placeholder="Tu teléfono o correo" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="bi bi-lock"></i> Contraseña
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="repartidor-password" placeholder="Tu contraseña" required>
+                                <span class="input-group-text password-toggle" onclick="togglePassword('repartidor-password')">
+                                    <i class="bi bi-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="remember-forgot">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" checked> Recuérdame
+                            </label>
+                            <a href="#">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="btn-login repartidor">
+                            <i class="bi bi-box-arrow-in-right"></i> Ingresar como Repartidor
+                        </button>
+                    </form>
+                </div>
+
+                <div class="footer-text">
+                    ¿No tienes cuenta? <a href="/front/crear-usuario.html">Crear una aquí</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="/front/js/api.js"></script>
+    <script src="/front/js/app.js"></script>
+    <script src="/front/js/offline.js"></script>
+
+    <script>
+        // Manejo de pestañas
+        document.querySelectorAll('.role-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const role = this.dataset.role;
+                
+                document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.role-content').forEach(c => c.classList.remove('active'));
+                document.querySelector(`.role-content.${role}`).classList.add('active');
+            });
+        });
+
+        // Mostrar/Ocultar contraseña
+        function togglePassword(id) {
+            const field = document.getElementById(id);
+            const icon = event.currentTarget.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.add('bi-eye');
+                icon.classList.remove('bi-eye-slash');
+            }
+        }
+
+        // Login Admin
+        document.getElementById('admin-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            const button = this.querySelector('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Verificando...';
+            button.disabled = true;
+
+            try {
+                const response = await AuthAPI.login(email, password);
+                
+                if (response && response.role === 'ADMIN') {
+                    saveSession(response);
+                    window.location.href = '/front/pages/admin/dashboard.html';
+                } else {
+                    showError('Acceso denegado. Solo administradores pueden acceder aquí.');
+                }
+            } catch (error) {
+                showError(error.message || 'Email o contraseña incorrectos.');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        });
+
+        // Login Repartidor
+        document.getElementById('repartidor-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('repartidor-phone').value;
+            const password = document.getElementById('repartidor-password').value;
+            const button = this.querySelector('button');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Verificando...';
+            button.disabled = true;
+
+            try {
+                const response = await AuthAPI.login(email, password);
+                
+                if (response && response.role === 'REPARTIDOR') {
+                    saveSession(response);
+                    window.location.href = '/front/pages/repartidor/inicio.html';
+                } else {
+                    showError('Acceso denegado. Solo repartidores pueden acceder aquí.');
+                }
+            } catch (error) {
+                showError(error.message || 'Email o contraseña incorrectos.');
+            } finally {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        });
+
+        function saveSession(response) {
+            localStorage.setItem('user_id', response.id);
+            localStorage.setItem('user_name', response.name);
+            localStorage.setItem('user_email', response.email);
+            localStorage.setItem('user_role', response.role.toLowerCase());
+            localStorage.setItem('auth_token', 'token_' + response.id);
+        }
+
+        function showError(message) {
+            const container = document.querySelector('.login-body');
+            const tabs = document.querySelector('.role-tabs');
+            
+            // Eliminar alerta previa si existe
+            const existingAlert = container.querySelector('.alert-danger');
+            if (existingAlert) existingAlert.remove();
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.style.backgroundColor = '#fef2f2';
+            alertDiv.style.borderColor = '#fca5a5';
+            alertDiv.style.color = '#b91c1c';
+            
+            alertDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <div>${message}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            container.insertBefore(alertDiv, tabs);
+        }
+
+        // Auto-seleccionar tab si viene en URL (?role=repartidor)
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get('role');
+        if (role === 'admin' || role === 'repartidor') {
+            document.querySelector(`.role-tab[data-role="${role}"]`).click();
+        }
+    </script>
+</body>
+</html>
