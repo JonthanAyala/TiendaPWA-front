@@ -642,6 +642,23 @@
       document.querySelector(`.role-tab[data-role="${role}"]`).click();
     }
   </script>
+
+  <!-- 🔥 Firebase Push Notifications -->
+  <script type="module" src="/TiendaPWA-front/js/firebase-notifications.js"></script>
+  <script type="module">
+    // Inicializar notificaciones después del login exitoso
+    // Se ejecuta automáticamente si hay user_id en localStorage
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('user_id')) {
+        console.log('🔔 Inicializando notificaciones push...');
+        setTimeout(() => {
+          if (window.FirebaseNotifications) {
+            window.FirebaseNotifications.inicializar();
+          }
+        }, 1000); // Esperar 1seg para que cargue todo
+      }
+    });
+  </script>
 </body>
 
 </html>
