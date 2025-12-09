@@ -1,7 +1,7 @@
 // Configuración de API
 // Detectar la URL del API automáticamente
 const API_BASE_URL =
-  "https://12saky1ao6.execute-api.us-east-1.amazonaws.com";
+  "https://12saky1ao6.execute-api.us-east-1.amazonaws.com/api";
 
 // Función genérica para hacer peticiones
 async function apiCall(endpoint, options = {}) {
