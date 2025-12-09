@@ -273,6 +273,22 @@
       document.querySelector('.sidebar-overlay').classList.toggle('active');
     }
   </script>
+  </script>
+
+  <!-- 🔥 Firebase Push Notifications -->
+  <script type="module" src="/TiendaPWA-front/js/firebase-notifications.js"></script>
+  <script type="module">
+    // Inicializar notificaciones
+    window.addEventListener('load', () => {
+      // Pequeño delay para asegurar que firebase-notifications.js cargó
+      setTimeout(() => {
+        if (window.FirebaseNotifications && localStorage.getItem('user_id')) {
+          console.log('🔔 Inicializando notificaciones push en Dashboard...');
+          window.FirebaseNotifications.inicializar();
+        }
+      }, 1000);
+    });
+  </script>
 </body>
 
 </html>

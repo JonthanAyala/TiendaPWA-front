@@ -139,7 +139,7 @@ async function setupPushNotifications() {
 // Inicializar cuando el documento esté listo
 document.addEventListener('DOMContentLoaded', () => {
   checkPWAInstallation();
-  setupPushNotifications(); // Llamar a la nueva función integrada
+  // setupPushNotifications(); // ❌ DESHABILITADO - Usar firebase-notifications.js
 
   // Cargar estilos para notificaciones
   addNotificationStyles();
