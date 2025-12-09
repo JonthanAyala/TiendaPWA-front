@@ -219,7 +219,55 @@
 
         </div>
         <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-warning" onclick="abrirAsignacionTemporal()">
+            <i class="bi bi-calendar-plus me-2"></i>Asignar Visita Temporal
+          </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Asignar Visita Temporal -->
+  <div class="modal fade" id="asignacionTemporalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title fw-bold"><i class="bi bi-calendar-plus me-2"></i>Asignar Visita Temporal</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info d-flex align-items-start">
+            <i class="bi bi-info-circle me-2 mt-1"></i>
+            <small>El repartidor recibirá una notificación <strong>solo el día seleccionado</strong> para visitar la
+              tienda asignada.</small>
+          </div>
+
+          <form id="asignacionTemporalForm">
+            <input type="hidden" id="temp-repartidor-id">
+            <input type="hidden" id="temp-repartidor-nombre">
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Repartidor</label>
+              <input type="text" class="form-control" id="temp-repartidor-display" readonly>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Tienda a Visitar</label>
+              <select class="form-select" id="temp-tienda-select" required>
+                <option value="" disabled selected>Selecciona una tienda...</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Fecha de Visita</label>
+              <input type="date" class="form-control" id="temp-fecha" required>
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100 fw-bold">
+              <i class="bi bi-check-circle me-2"></i>Confirmar Asignación
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -389,6 +437,9 @@
       const rep = allRepartidores[index];
       if (!rep) return;
 
+      // Guardar para asignación temporal
+      currentRepartidorForTemp = rep;
+
       document.getElementById('detalle-nombre').textContent = rep.name;
       document.getElementById('detalle-id').textContent = '#' + rep.id;
       document.getElementById('detalle-email').textContent = rep.email;
@@ -441,6 +492,88 @@
       body.textContent = msg;
       new bootstrap.Toast(el).show();
     }
+
+    // 8. Asignaciones Temporales
+    let currentRepartidorForTemp = null;
+
+    function abrirAsignacionTemporal() {
+      if (!currentRepartidorForTemp) {
+        return showToast('Error: No se pudo cargar el repartidor', 'danger');
+      }
+
+      // Cerrar modal de detalle
+      bootstrap.Modal.getInstance(document.getElementById('detalleRepartidorModal')).hide();
+
+      // Llenar datos del repartidor
+      document.getElementById('temp-repartidor-id').value = currentRepartidorForTemp.id;
+      document.getElementById('temp-repartidor-nombre').value = currentRepartidorForTemp.name;
+      document.getElementById('temp-repartidor-display').value = currentRepartidorForTemp.name + ' (' + currentRepartidorForTemp.email + ')';
+
+      // Establecer fecha mínima (hoy)
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('temp-fecha').setAttribute('min', today);
+      document.getElementById('temp-fecha').value = today;
+
+      // Cargar tiendas
+      loadStoresForTempAssignment();
+
+      // Mostrar modal
+      const modal = new bootstrap.Modal(document.getElementById('asignacionTemporalModal'));
+      modal.show();
+    }
+
+    async function loadStoresForTempAssignment() {
+      try {
+        const stores = await StoreAPI.list();
+        const select = document.getElementById('temp-tienda-select');
+        select.innerHTML = '<option value="" disabled selected>Selecciona una tienda...</option>';
+
+        stores.forEach(store => {
+          const opt = document.createElement('option');
+          opt.value = store.id;
+          opt.textContent = `${store.name} - ${store.address || 'Sin dirección'}`;
+          select.appendChild(opt);
+        });
+      } catch (error) {
+        console.error('Error cargando tiendas:', error);
+        showToast('Error al cargar tiendas', 'danger');
+      }
+    }
+
+    document.getElementById('asignacionTemporalForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const btn = this.querySelector('button[type="submit"]');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Asignando...';
+      btn.disabled = true;
+
+      const repartidorId = document.getElementById('temp-repartidor-id').value;
+      const repartidorNombre = document.getElementById('temp-repartidor-nombre').value;
+      const storeId = document.getElementById('temp-tienda-select').value;
+      const fecha = document.getElementById('temp-fecha').value;
+
+      try {
+        await TemporaryAssignmentAPI.assign(storeId, repartidorId, fecha);
+
+        bootstrap.Modal.getInstance(document.getElementById('asignacionTemporalModal')).hide();
+        this.reset();
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Asignación Exitosa!',
+          text: `${repartidorNombre} visitará la tienda el ${fecha}`,
+          confirmButtonColor: '#10b981'
+        });
+
+      } catch (error) {
+        console.error(error);
+        Swal.fire('Error', 'No se pudo crear la asignación temporal.', 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
 
     // Init
     document.addEventListener('DOMContentLoaded', () => {

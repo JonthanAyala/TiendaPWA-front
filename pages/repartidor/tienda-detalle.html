@@ -1,102 +1,230 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detalle de Tienda</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/TiendaPWA-front/css/admin.css">
-  <style>
-    body { padding-bottom: 90px; background-color: #f8f9fa; }
-    .order-mini-card {
-        background: white; padding: 10px; border-bottom: 1px solid #eee;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    /* Estilo para el lector de cámara */
-    #reader { width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
-  </style>
-</head>
-<body>
-
-  <div class="bg-white p-3 border-bottom sticky-top d-flex align-items-center shadow-sm">
-      <a href="/TiendaPWA-front/pages/repartidor/inicio.html" class="btn btn-light btn-sm me-3"><i class="bi bi-arrow-left"></i></a>
-      <h5 class="mb-0 fw-bold flex-grow-1">Punto de Recolección</h5>
-  </div>
-
-  <div class="container py-3" id="content">
-    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
-  </div>
-
-  <div class="fixed-bottom bg-white border-top p-3 shadow-lg">
-    <button id="btn-scan" class="btn btn-dark w-100 py-3 fw-bold shadow" onclick="abrirEscaner()">
-        <i class="bi bi-qr-code-scan me-2"></i> ESCANEAR CÓDIGO QR
-    </button>
-  </div>
-
-  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title fs-6">Escaneando Tienda...</h5>
-          <button type="button" class="btn-close btn-close-white" onclick="cerrarEscaner()"></button>
-        </div>
-        <div class="modal-body p-0 bg-black">
-            <div id="reader"></div>
-            <div class="p-3 text-center text-white-50 small">
-                Apunta al código QR pegado en la tienda para confirmar tu llegada.
-            </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
-  <script src="/TiendaPWA-front/js/api.js"></script>
-  
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const storeId = params.get('id');
-    let currentStore = null;
-    let html5QrcodeScanner = null;
-
-    // 1. Cargar Datos de la Tienda
-    async function loadData() {
-        if (!storeId) {
-            alert("Error: No hay tienda seleccionada");
-            window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
-            return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Tienda</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/TiendaPWA-front/css/admin.css">
+    <style>
+        body {
+            padding-bottom: 90px;
+            background-color: #f8f9fa;
         }
 
-        try {
-            const stores = await StoreAPI.list();
-            currentStore = stores.find(s => s.id == storeId);
+        .order-mini-card {
+            background: white;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-            if (!currentStore) {
-                alert("Tienda no encontrada");
+        #reader {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-white p-3 border-bottom sticky-top d-flex align-items-center shadow-sm">
+        <a href="/TiendaPWA-front/pages/repartidor/inicio.html" class="btn btn-light btn-sm me-3"><i
+                class="bi bi-arrow-left"></i></a>
+        <h5 class="mb-0 fw-bold flex-grow-1">Punto de Recolección</h5>
+    </div>
+
+    <div class="container py-3" id="content">
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+        </div>
+    </div>
+
+    <div class="fixed-bottom bg-white border-top p-3 shadow-lg">
+        <button id="btn-scan" class="btn btn-dark w-100 py-3 fw-bold shadow" onclick="abrirEscaner()">
+            <i class="bi bi-qr-code-scan me-2"></i> ESCANEAR CÓDIGO QR
+        </button>
+    </div>
+
+    <!-- MODAL: Escanear QR -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fs-6">Escaneando Tienda...</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="cerrarEscaner()"></button>
+                </div>
+                <div class="modal-body p-0 bg-black">
+                    <div id="reader"></div>
+                    <div class="p-3 text-center text-white-50 small">
+                        Apunta al código QR pegado en la tienda para confirmar tu llegada.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Decisión después de escanear -->
+    <div class="modal fade" id="decisionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle me-2"></i>Visita Registrada</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <h5 class="mb-3">¿La tienda desea hacer un pedido?</h5>
+                    <p class="text-muted">Selecciona una opción para continuar</p>
+                </div>
+                <div class="modal-footer border-0 d-grid gap-2 pb-4 px-4">
+                    <button class="btn btn-success btn-lg" onclick="abrirPedidoModal()">
+                        <i class="bi bi-cart-plus me-2"></i>SÍ, Levantar Pedido
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="marcarSinPedido()">
+                        <i class="bi bi-x-circle me-2"></i>NO, No hizo pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Crear Pedido -->
+    <div class="modal fade" id="pedidoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-cart-plus me-2"></i>Levantar Pedido</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="cerrarPedidoModal()"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <small><strong>Tienda:</strong> <span id="pedido-tienda-nombre"></span></small>
+                    </div>
+
+                    <!-- Selector de productos -->
+                    <div class="bg-light p-3 rounded mb-3 border">
+                        <label class="form-label fw-bold text-primary"><i class="bi bi-cart-plus"></i> Agregar
+                            Productos</label>
+                        <div class="input-group mb-2">
+                            <select class="form-select" id="select-producto" style="flex: 2;">
+                                <option value="">Cargando productos...</option>
+                            </select>
+                            <input type="number" class="form-control" id="cantidad-producto" placeholder="Cant."
+                                value="1" min="1" style="max-width: 80px;">
+                            <button type="button" class="btn btn-success" onclick="agregarAlCarrito()">
+                                <i class="bi bi-plus-lg"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Carrito -->
+                    <div class="table-responsive border rounded mb-3" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-sm mb-0 align-middle">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="ps-3">Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end pe-3">Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="carrito-body">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">No hay productos agregados</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <h4 class="mb-0">Total: <span class="text-success fw-bold" id="total-carrito">$0.00</span></h4>
+                        <button type="button" class="btn btn-success px-4 py-2 fw-bold" onclick="guardarPedido()">
+                            <i class="bi bi-check-circle me-2"></i>Confirmar Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/TiendaPWA-front/js/api.js"></script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const storeId = params.get('id');
+        let currentStore = null;
+        let html5QrcodeScanner = null;
+        let allProducts = [];
+        let carrito = [];
+        let gpsCoords = null;
+
+        // ========== CARGA INICIAL ==========
+        async function loadData() {
+            if (!storeId) {
+                alert("Error: No hay tienda seleccionada");
                 window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
                 return;
             }
 
-            const allOrders = await OrderAPI.list();
-            const storeOrders = allOrders.filter(o => o.store?.id == storeId && (o.status === 'PENDIENTE' || o.status === 'EN_PROCESO'));
+            try {
+                const stores = await StoreAPI.list();
+                currentStore = stores.find(s => s.id == storeId);
 
-            renderUI(currentStore, storeOrders);
+                if (!currentStore) {
+                    alert("Tienda no encontrada");
+                    window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
+                    return;
+                }
 
-        } catch (e) {
-            console.error(e);
-            document.getElementById('content').innerHTML = '<p class="text-danger text-center">Error de conexión</p>';
+                const allOrders = await OrderAPI.list();
+                const storeOrders = allOrders.filter(o => o.store?.id == storeId && (o.status === 'PENDIENTE' || o.status === 'EN_PROCESO'));
+
+                renderUI(currentStore, storeOrders);
+
+                // Cargar productos para el modal
+                await loadProducts();
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('content').innerHTML = '<p class="text-danger text-center">Error de conexión</p>';
+            }
         }
-    }
 
-    function renderUI(store, orders) {
-        let ordersHtml = '';
-        if (orders.length > 0) {
-            orders.forEach(o => {
-                ordersHtml += `
+        async function loadProducts() {
+            try {
+                allProducts = await ProductAPI.list();
+                const prodSelect = document.getElementById('select-producto');
+                prodSelect.innerHTML = '<option value="" disabled selected>Selecciona producto...</option>';
+
+                allProducts.forEach(p => {
+                    if (p.stock > 0) {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} - $${p.price.toFixed(2)} (Stock: ${p.stock})`;
+                        prodSelect.appendChild(opt);
+                    }
+                });
+            } catch (e) {
+                console.error('Error cargando productos:', e);
+            }
+        }
+
+        function renderUI(store, orders) {
+            let ordersHtml = '';
+            if (orders.length > 0) {
+                orders.forEach(o => {
+                    ordersHtml += `
                     <div class="order-mini-card">
                         <div>
                             <span class="fw-bold">Pedido #${o.id}</span>
@@ -105,16 +233,16 @@
                         <span class="badge bg-warning text-dark">${o.status}</span>
                     </div>
                 `;
-            });
-        } else {
-            ordersHtml = '<p class="text-muted text-center py-2">No hay pedidos pendientes aquí.</p>';
-        }
+                });
+            } else {
+                ordersHtml = '<p class="text-muted text-center py-2">No hay pedidos pendientes aquí.</p>';
+            }
 
-        const gpsLink = (store.latitude && store.longitude) 
-            ? `<a href="https://www.google.com/maps/search/?api=1&query=${store.latitude},${store.longitude}" target="_blank" class="btn btn-outline-primary flex-fill me-2"><i class="bi bi-map"></i> GPS</a>`
-            : `<button class="btn btn-outline-secondary flex-fill me-2" disabled><i class="bi bi-map"></i> Sin GPS</button>`;
+            const gpsLink = (store.latitude && store.longitude)
+                ? `<a href="https://www.google.com/maps/search/?api=1&query=${store.latitude},${store.longitude}" target="_blank" class="btn btn-outline-primary flex-fill me-2"><i class="bi bi-map"></i> GPS</a>`
+                : `<button class="btn btn-outline-secondary flex-fill me-2" disabled><i class="bi bi-map"></i> Sin GPS</button>`;
 
-        const html = `
+            const html = `
             <h2 class="fw-bold mb-1">${store.name}</h2>
             <p class="text-muted mb-3">Código esperado: <span class="badge bg-light text-dark border">${store.code}</span></p>
 
@@ -135,93 +263,237 @@
             </div>
         `;
 
-        document.getElementById('content').innerHTML = html;
-    }
-
-    // --- LÓGICA DEL QR ---
-
-    function abrirEscaner() {
-        const modalElement = document.getElementById('qrModal');
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-
-        // Limpiar instancia previa si existe
-        if(html5QrcodeScanner) { 
-            html5QrcodeScanner.clear(); 
+            document.getElementById('content').innerHTML = html;
         }
 
-        // Iniciar cámara
-        html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 }
-        );
-        
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-    }
+        // ========== ESCANEO QR ==========
+        function abrirEscaner() {
+            const modalElement = document.getElementById('qrModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
 
-    function cerrarEscaner() {
-        if(html5QrcodeScanner) {
-            html5QrcodeScanner.clear().then(_ => {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader", { fps: 10, qrbox: 250 }
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        }
+
+        function cerrarEscaner() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear().then(_ => {
+                    bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+                }).catch(error => {
+                    console.error("Error al cerrar cámara", error);
+                    bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+                });
+            } else {
                 bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
-            }).catch(error => {
-                console.error("Error al cerrar cámara", error);
-                // Forzar cierre modal aunque falle cámara
-                bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
-            });
-        } else {
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            html5QrcodeScanner.clear();
             bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+
+            if (decodedText === currentStore.code) {
+                procesarVisita();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Código Incorrecto',
+                    text: `Escaneaste "${decodedText}", pero se esperaba "${currentStore.code}".`
+                });
+            }
         }
-    }
 
-    function onScanSuccess(decodedText, decodedResult) {
-        // Detener escaneo inmediatamente
-        html5QrcodeScanner.clear();
-        bootstrap.Modal.getInstance(document.getElementById('qrModal')).hide();
+        function onScanFailure(error) {
+            // No hacer nada, ruido normal
+        }
 
-        // Validar código
-        if (decodedText === currentStore.code) {
-            procesarVisita();
-        } else {
+        // ========== PROCESAR VISITA Y DECISIÓN ==========
+        async function procesarVisita() {
+            if (!navigator.geolocation) {
+                return Swal.fire('Error', 'Tu dispositivo no tiene GPS activo.', 'error');
+            }
+
             Swal.fire({
-                icon: 'error',
-                title: 'Código Incorrecto',
-                text: `Escaneaste "${decodedText}", pero se esperaba "${currentStore.code}".`
+                title: 'Verificando ubicación...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                try {
+                    gpsCoords = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    };
+
+                    const userId = localStorage.getItem('user_id');
+
+                    // Registrar visita (hadOrder = false por ahora, se actualizará si hace pedido)
+                    await VisitAPI.registerScan(
+                        currentStore.code,
+                        userId,
+                        gpsCoords.lat,
+                        gpsCoords.lng,
+                        false,  // No sabemos aún si hará pedido
+                        false
+                    );
+
+                    Swal.close();
+
+                    // Mostrar modal de decisión
+                    const decisionModal = new bootstrap.Modal(document.getElementById('decisionModal'));
+                    decisionModal.show();
+
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire('Error', 'No se pudo registrar la visita en el servidor.', 'error');
+                }
+            }, (err) => {
+                Swal.fire('Error GPS', 'Necesitamos tu ubicación para validar la visita.', 'error');
             });
         }
-    }
 
-    function onScanFailure(error) {
-        // No hacer nada, es ruido normal mientras busca QR
-    }
+        function marcarSinPedido() {
+            bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
 
-    async function procesarVisita() {
-        if (!navigator.geolocation) {
-            return Swal.fire('Error', 'Tu dispositivo no tiene GPS activo.', 'error');
+            Swal.fire({
+                icon: 'info',
+                title: 'Visita Registrada',
+                text: 'Se ha marcado que esta tienda no realizó pedido.',
+                confirmButtonColor: '#6c757d'
+            }).then(() => {
+                window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
+            });
         }
 
-        Swal.fire({
-            title: 'Verificando ubicación...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading() }
-        });
+        function abrirPedidoModal() {
+            bootstrap.Modal.getInstance(document.getElementById('decisionModal')).hide();
 
-        navigator.geolocation.getCurrentPosition(async (pos) => {
+            document.getElementById('pedido-tienda-nombre').textContent = currentStore.name;
+
+            const pedidoModal = new bootstrap.Modal(document.getElementById('pedidoModal'));
+            pedidoModal.show();
+        }
+
+        function cerrarPedidoModal() {
+            const result = confirm('¿Seguro que quieres cancelar? Se perderán los productos agregados.');
+            if (result) {
+                carrito = [];
+                renderCarrito();
+                bootstrap.Modal.getInstance(document.getElementById('pedidoModal')).hide();
+            }
+        }
+
+        // ========== CARRITO DE PEDIDO ==========
+        function agregarAlCarrito() {
+            const prodId = document.getElementById('select-producto').value;
+            const cant = parseInt(document.getElementById('cantidad-producto').value);
+
+            if (!prodId || isNaN(cant) || cant < 1) {
+                return alert("Selecciona un producto y una cantidad válida");
+            }
+
+            const productoReal = allProducts.find(p => p.id == prodId);
+            if (!productoReal) return;
+
+            if (cant > productoReal.stock) {
+                return alert(`Solo hay ${productoReal.stock} unidades disponibles.`);
+            }
+
+            const existe = carrito.find(item => item.product.id == prodId);
+            if (existe) {
+                if (existe.quantity + cant > productoReal.stock) {
+                    return alert(`Stock insuficiente. Ya tienes ${existe.quantity} en el carrito.`);
+                }
+                existe.quantity += cant;
+            } else {
+                carrito.push({
+                    product: { id: productoReal.id, name: productoReal.name, price: productoReal.price },
+                    quantity: cant
+                });
+            }
+
+            document.getElementById('select-producto').value = "";
+            document.getElementById('cantidad-producto').value = "1";
+
+            renderCarrito();
+        }
+
+        function renderCarrito() {
+            const tbody = document.getElementById('carrito-body');
+            let total = 0;
+            tbody.innerHTML = '';
+
+            if (carrito.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No hay productos agregados</td></tr>';
+                document.getElementById('total-carrito').textContent = `$0.00`;
+                return;
+            }
+
+            carrito.forEach((item, index) => {
+                const subtotal = item.product.price * item.quantity;
+                total += subtotal;
+
+                const row = `
+                <tr>
+                    <td class="ps-3">${item.product.name}</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-end">$${subtotal.toFixed(2)}</td>
+                    <td class="text-end pe-3">
+                        <button type="button" class="btn btn-sm btn-outline-danger border-0" onclick="eliminarDelCarrito(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            document.getElementById('total-carrito').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            renderCarrito();
+        }
+
+        // ========== GUARDAR PEDIDO ==========
+        async function guardarPedido() {
+            if (carrito.length === 0) {
+                return alert("Debes agregar al menos un producto.");
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+            btn.disabled = true;
+
+            const orderData = {
+                clientName: currentStore.name,  // Nombre de la tienda como cliente
+                storeId: currentStore.id,
+                items: carrito.map(item => ({
+                    productId: item.product.id,
+                    quantity: item.quantity
+                }))
+            };
+
             try {
-                const userId = localStorage.getItem('user_id');
-                
-                // Enviar al Backend
-                await VisitAPI.registerScan(
-                    currentStore.code, 
-                    userId, 
-                    pos.coords.latitude, 
-                    pos.coords.longitude,
-                    true, 
-                    false 
-                );
+                await OrderAPI.create(orderData);
+
+                bootstrap.Modal.getInstance(document.getElementById('pedidoModal')).hide();
 
                 Swal.fire({
                     icon: 'success',
-                    title: '¡Check-in Exitoso!',
-                    text: 'Visita registrada correctamente.',
+                    title: '¡Pedido Registrado!',
+                    text: 'El pedido ha sido levantado correctamente.',
                     confirmButtonColor: '#10b981'
                 }).then(() => {
                     window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
@@ -229,15 +501,16 @@
 
             } catch (error) {
                 console.error(error);
-                Swal.fire('Error', 'No se pudo registrar la visita en el servidor.', 'error');
+                alert("Error al guardar pedido: " + (error.message || "Desconocido"));
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
-        }, (err) => {
-            Swal.fire('Error GPS', 'Necesitamos tu ubicación para validar la visita.', 'error');
-        });
-    }
+        }
 
-    // Iniciar
-    loadData();
-  </script>
+        // ========== INIT ==========
+        loadData();
+    </script>
 </body>
+
 </html>

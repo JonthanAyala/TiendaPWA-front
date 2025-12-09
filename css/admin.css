@@ -318,8 +318,11 @@ table td {
 .sidebar-overlay {
   display: none;
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   z-index: 99;
   backdrop-filter: blur(3px);
 }
@@ -337,7 +340,7 @@ table td {
 
   .sidebar.active {
     transform: translateX(0);
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
   }
 
   .main-content {
@@ -346,31 +349,41 @@ table td {
   }
 
   .topbar {
-    padding: 15px;
+    padding: 10px 15px;
     position: sticky;
     top: 0;
-    z-index: 101; /* Higher than sidebar for the toggle button */
+    z-index: 101;
   }
 
   .topbar h2 {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
+  }
+
+  /* Hide User Badge on Mobile */
+  #user-badge {
+    display: none !important;
   }
 
   .container-fluid {
     padding: 15px;
   }
-  
+
   /* Table Responsiveness */
   .table-responsive {
     border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   }
 
   table {
     font-size: 0.9rem;
   }
 
-  table td, table th {
+  table td,
+  table th {
     padding: 12px 10px;
     white-space: nowrap;
   }
