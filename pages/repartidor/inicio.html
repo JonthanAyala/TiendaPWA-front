@@ -136,12 +136,13 @@
       const userId = localStorage.getItem('user_id');
 
       try {
-        // Cargar pedidos regulares
-        const allOrders = await OrderAPI.list();
-        const activeOrders = allOrders.filter(o => o.status === 'PENDIENTE' || o.status === 'EN_PROCESO');
+        // Cargar información del repartidor actual
+        const currentUser = await UserAPI.getById(userId);
+
+        // Obtener tienda asignada del repartidor
+        const assignedStore = currentUser.store;
 
         // Cargar visitas temporales (simulado - falta implementar en backend)
-        // Por ahora usamos un array vacío, pero el backend debería retornar las asignaciones del día
         let tempVisits = [];
         try {
           // TODO: Implementar endpoint para obtener visitas temporales del día
@@ -183,47 +184,60 @@
           });
         }
 
-        // Agrupar pedidos regulares por tienda
-        if (activeOrders.length === 0 && tempVisits.length === 0) {
-          container.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-check-circle display-1 text-success opacity-50"></i><p class="mt-3">¡Ruta completada por hoy!</p></div>`;
+        // Verificar si tiene tienda asignada
+        if (!assignedStore) {
+          if (tempVisits.length === 0) {
+            container.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-info-circle display-1 opacity-50"></i>
+                            <p class="mt-3">No tienes tiendas asignadas.<br>Contacta al administrador.</p>
+                        </div>`;
+          }
           return;
         }
 
-        if (activeOrders.length > 0) {
-          const ordersByStore = {};
-          activeOrders.forEach(order => {
-            const storeId = order.store?.id;
-            if (!storeId) return;
-            if (!ordersByStore[storeId]) ordersByStore[storeId] = { info: order.store, orders: [] };
-            ordersByStore[storeId].orders.push(order);
-          });
-
-          if (tempVisits.length > 0) {
-            container.innerHTML += `<hr class="my-4">`;
-          }
-
-          container.innerHTML += `<h6 class="text-muted ms-1 mb-3 small fw-bold">PUNTOS DE RECOLECCIÓN</h6>`;
-          Object.values(ordersByStore).forEach(group => {
-            const store = group.info;
-            const count = group.orders.length;
-
-            const card = `
-                        <div class="store-card">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="mb-0 fw-bold">${store.name}</h5>
-                                <span class="badge bg-warning text-dark rounded-pill">${count} Paquetes</span>
-                            </div>
-                            <p class="text-muted small mb-1"><i class="bi bi-geo-alt"></i> ${store.address || 'Sin dirección'}</p>
-                            <button class="btn-go" onclick="window.location.href='/TiendaPWA-front/pages/repartidor/tienda-detalle.html?id=${store.id}'">
-                                <i class="bi bi-arrow-right-circle me-1"></i> Ir a la Tienda
-                            </button>
-                        </div>`;
-            container.insertAdjacentHTML('beforeend', card);
-          });
+        // Separador si hay visitas temporales
+        if (tempVisits.length > 0) {
+          container.innerHTML += `<hr class="my-4">`;
         }
+
+        // Mostrar tienda asignada
+        container.innerHTML += `<h6 class="text-muted ms-1 mb-3 small fw-bold">
+                    <i class="bi bi-shop me-1"></i>MI TIENDA ASIGNADA
+                </h6>`;
+
+        // Verificar si hay pedidos pendientes para esta tienda
+        const allOrders = await OrderAPI.list();
+        const storePendingOrders = allOrders.filter(
+          o => o.store?.id == assignedStore.id &&
+            (o.status === 'PENDIENTE' || o.status === 'EN_PROCESO')
+        );
+
+        let badgeHtml = '';
+        if (storePendingOrders.length > 0) {
+          badgeHtml = `<span class="badge bg-info text-white rounded-pill">${storePendingOrders.length} Pedido(s) Pendiente(s)</span>`;
+        } else {
+          badgeHtml = `<span class="badge bg-success text-white rounded-pill"><i class="bi bi-check-circle me-1"></i>Lista para visitar</span>`;
+        }
+
+        const storeCard = `
+                <div class="store-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0 fw-bold">${assignedStore.name}</h5>
+                        ${badgeHtml}
+                    </div>
+                    <p class="text-muted small mb-1"><i class="bi bi-geo-alt"></i> ${assignedStore.address || 'Sin dirección'}</p>
+                    <p class="text-muted small mb-2"><i class="bi bi-upc-scan me-1"></i> Código: <strong>${assignedStore.code}</strong></p>
+                    <button class="btn-go" onclick="window.location.href='/TiendaPWA-front/pages/repartidor/tienda-detalle.html?id=${assignedStore.id}'">
+                        <i class="bi bi-arrow-right-circle me-1"></i> Ir a la Tienda
+                    </button>
+                </div>`;
+
+        container.insertAdjacentHTML('beforeend', storeCard);
+
       } catch (error) {
         console.error(error);
-        container.innerHTML = '<div class="alert alert-danger">Error de conexión.</div>';
+        container.innerHTML = '<div class="alert alert-danger">Error de conexión. No se pudo cargar tu ruta.</div>';
       }
     }
 
