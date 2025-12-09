@@ -142,11 +142,13 @@
         // Obtener tienda asignada del repartidor
         const assignedStore = currentUser.store;
 
-        // Cargar visitas temporales (simulado - falta implementar en backend)
+        // Cargar visitas temporales (asignaciones temporales del día)
         let tempVisits = [];
         try {
-          // TODO: Implementar endpoint para obtener visitas temporales del día
-          // tempVisits = await TemporaryAssignmentAPI.getByRepartidorAndDate(userId, today);
+          // Obtener fecha de hoy en formato ISO (YYYY-MM-DD)
+          const today = new Date().toISOString().split('T')[0];
+          tempVisits = await TemporaryAssignmentAPI.getByRepartidorAndDate(userId, today);
+          console.log('Visitas temporales cargadas:', tempVisits);
         } catch (e) {
           console.log('No se pudieron cargar visitas temporales:', e);
         }

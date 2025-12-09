@@ -276,4 +276,9 @@ const TemporaryAssignmentAPI = {
       method: "POST",
     });
   },
+
+  getByRepartidorAndDate: async (repartidorId, date) => {
+    return apiCall(`/temporary-assignments/repartidor/${repartidorId}/date/${date}`);
+  },
 };
+
