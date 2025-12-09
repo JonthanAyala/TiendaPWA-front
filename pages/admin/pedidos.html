@@ -17,7 +17,8 @@
 </head>
 
 <body>
-  <div class="sidebar">
+  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <i class="bi bi-truck" style="font-size: 1.5rem;"></i>
       <h4>Tienda UCQ</h4>
@@ -52,7 +53,12 @@
 
   <div class="main-content">
     <div class="topbar">
-      <h2 class="mb-0"><i class="bi bi-box-seam"></i> Gestión de Pedidos</h2>
+      <h2 class="mb-0">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+          <i class="bi bi-list"></i>
+        </button>
+        <i class="bi bi-box-seam"></i> Gestión de Pedidos
+      </h2>
       <div>
         <span class="badge bg-info me-3" id="user-badge">Admin</span>
         <button class="btn btn-sm btn-outline-danger" onclick="logout()">
@@ -99,7 +105,7 @@
           <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
               <tr>
-                <th scope="col" class="ps-4">ID</th>
+                <!-- <th scope="col" class="ps-4">ID</th> -->
                 <th scope="col">Cliente</th>
                 <th scope="col">Tienda</th>
                 <th scope="col">Total</th>
@@ -476,7 +482,7 @@
         const orderJson = JSON.stringify(order).replace(/'/g, "\\'");
 
         row.innerHTML = `
-                <td class="ps-4 fw-bold text-muted">#${order.id}</td>
+                <!-- <td class="ps-4 fw-bold text-muted">#${order.id}</td> -->
                 <td><span class="fw-bold text-dark">${order.clientName || 'Anónimo'}</span></td>
                 <td>${order.store?.name || 'Tienda ' + (order.store?.id || '?')}</td>
                 <td class="fw-bold text-primary">$${(order.totalPrice || 0).toFixed(2)}</td>
@@ -599,6 +605,10 @@
       fetchOrders();
       loadFormData(); // Cargar tiendas y productos
     });
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+      document.querySelector('.sidebar-overlay').classList.toggle('active');
+    }
   </script>
 </body>
 
