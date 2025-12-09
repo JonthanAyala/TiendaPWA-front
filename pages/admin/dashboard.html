@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2563eb">
   <link rel="manifest" href="/TiendaPWA-front/manifest.json">
-  <link rel="apple-touch-icon" href="/TiendaPWA-front/assets/icons/icon-192x192.png">
-  
+  <link rel="apple-touch-icon" href="/TiendaPWA-front/img/192.png">
+
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css"
+    rel="stylesheet">
   <link rel="stylesheet" href="/TiendaPWA-front/css/admin.css">
-  
+
   <title>Dashboard Admin</title>
 </head>
+
 <body>
   <div class="sidebar">
     <div class="sidebar-header">
@@ -59,7 +62,7 @@
     </div>
 
     <div class="container-fluid p-4">
-      
+
       <div class="row mb-4">
         <div class="col-md-3">
           <div class="stat-card bg-white p-3 rounded shadow-sm border-start border-4 border-primary">
@@ -109,7 +112,11 @@
                   </tr>
                 </thead>
                 <tbody id="dashboard-orders-body">
-                  <tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando...</td></tr>
+                  <tr>
+                    <td colspan="4" class="text-center py-4">
+                      <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -120,7 +127,8 @@
           <div class="card shadow-sm h-100">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Repartidores Recientes</h5>
-              <a href="/TiendaPWA-front/pages/admin/repartidores.html" class="btn btn-sm btn-outline-primary">Gestionar</a>
+              <a href="/TiendaPWA-front/pages/admin/repartidores.html"
+                class="btn btn-sm btn-outline-primary">Gestionar</a>
             </div>
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
@@ -132,7 +140,11 @@
                   </tr>
                 </thead>
                 <tbody id="dashboard-repartidores-body">
-                  <tr><td colspan="3" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Cargando...</td></tr>
+                  <tr>
+                    <td colspan="3" class="text-center py-4">
+                      <div class="spinner-border text-primary spinner-border-sm"></div> Cargando...
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -148,53 +160,53 @@
   <script src="/TiendaPWA-front/js/offline.js"></script>
 
   <script>
-    function checkAuth() { 
+    function checkAuth() {
       if (localStorage.getItem('user_role') !== 'admin' && localStorage.getItem('user_role') !== 'ADMIN') {
-        window.location.href = '/TiendaPWA-front/login.html'; 
+        window.location.href = '/TiendaPWA-front/login.html';
       }
       document.getElementById('user-badge').textContent = localStorage.getItem('user_name') || 'Admin';
     }
-    
+
     function logout() { localStorage.clear(); window.location.href = '/TiendaPWA-front/login.html'; }
 
     // Helpers
     function getStatusBadge(status) {
-        let color = 'secondary';
-        if (status === 'COMPLETADO' || status === 'DELIVERED') color = 'success';
-        if (status === 'EN_PROCESO' || status === 'SENT') color = 'warning';
-        if (status === 'PENDIENTE' || status === 'CREATED') color = 'danger';
-        return `<span class="badge bg-${color} rounded-pill">${status}</span>`;
+      let color = 'secondary';
+      if (status === 'COMPLETADO' || status === 'DELIVERED') color = 'success';
+      if (status === 'EN_PROCESO' || status === 'SENT') color = 'warning';
+      if (status === 'PENDIENTE' || status === 'CREATED') color = 'danger';
+      return `<span class="badge bg-${color} rounded-pill">${status}</span>`;
     }
 
     async function loadDashboardData() {
-        // 1. Cargar Pedidos y Calcular Estadísticas
-        try {
-            const orders = await OrderAPI.list();
-            
-            // Contadores
-            const total = orders.length;
-            const completados = orders.filter(o => o.status === 'COMPLETADO' || o.status === 'DELIVERED').length;
-            const proceso = orders.filter(o => o.status === 'EN_PROCESO' || o.status === 'SENT').length;
-            const pendientes = orders.filter(o => o.status === 'PENDIENTE' || o.status === 'CREATED').length;
+      // 1. Cargar Pedidos y Calcular Estadísticas
+      try {
+        const orders = await OrderAPI.list();
 
-            // Actualizar DOM Stats
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-completados').textContent = completados;
-            document.getElementById('stat-proceso').textContent = proceso;
-            document.getElementById('stat-pendientes').textContent = pendientes;
+        // Contadores
+        const total = orders.length;
+        const completados = orders.filter(o => o.status === 'COMPLETADO' || o.status === 'DELIVERED').length;
+        const proceso = orders.filter(o => o.status === 'EN_PROCESO' || o.status === 'SENT').length;
+        const pendientes = orders.filter(o => o.status === 'PENDIENTE' || o.status === 'CREATED').length;
 
-            // Tabla Últimos Pedidos (Top 5 más recientes)
-            // Asumimos que vienen en orden o invertimos si es necesario. 
-            // Si la API no ordena, podemos hacer .reverse() o ordenar por ID.
-            const recentOrders = orders.slice(-5).reverse(); 
-            const ordersBody = document.getElementById('dashboard-orders-body');
-            ordersBody.innerHTML = '';
+        // Actualizar DOM Stats
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-completados').textContent = completados;
+        document.getElementById('stat-proceso').textContent = proceso;
+        document.getElementById('stat-pendientes').textContent = pendientes;
 
-            if (recentOrders.length === 0) {
-                ordersBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Sin pedidos recientes</td></tr>';
-            } else {
-                recentOrders.forEach(order => {
-                    const row = `
+        // Tabla Últimos Pedidos (Top 5 más recientes)
+        // Asumimos que vienen en orden o invertimos si es necesario. 
+        // Si la API no ordena, podemos hacer .reverse() o ordenar por ID.
+        const recentOrders = orders.slice(-5).reverse();
+        const ordersBody = document.getElementById('dashboard-orders-body');
+        ordersBody.innerHTML = '';
+
+        if (recentOrders.length === 0) {
+          ordersBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Sin pedidos recientes</td></tr>';
+        } else {
+          recentOrders.forEach(order => {
+            const row = `
                         <tr>
                             <td class="fw-bold">#${order.id}</td>
                             <td>${order.clientName || 'Cliente'}</td>
@@ -202,28 +214,28 @@
                             <td>${getStatusBadge(order.status)}</td>
                         </tr>
                     `;
-                    ordersBody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-
-        } catch (error) {
-            console.error("Error loading orders:", error);
-            document.getElementById('dashboard-orders-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando pedidos</td></tr>';
+            ordersBody.insertAdjacentHTML('beforeend', row);
+          });
         }
 
-        // 2. Cargar Repartidores
-        try {
-            const users = await UserAPI.list();
-            const repartidores = users.filter(u => u.role === 'REPARTIDOR').slice(0, 5); // Solo los primeros 5
-            
-            const repBody = document.getElementById('dashboard-repartidores-body');
-            repBody.innerHTML = '';
+      } catch (error) {
+        console.error("Error loading orders:", error);
+        document.getElementById('dashboard-orders-body').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando pedidos</td></tr>';
+      }
 
-            if (repartidores.length === 0) {
-                repBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No hay repartidores</td></tr>';
-            } else {
-                repartidores.forEach(rep => {
-                    const row = `
+      // 2. Cargar Repartidores
+      try {
+        const users = await UserAPI.list();
+        const repartidores = users.filter(u => u.role === 'REPARTIDOR').slice(0, 5); // Solo los primeros 5
+
+        const repBody = document.getElementById('dashboard-repartidores-body');
+        repBody.innerHTML = '';
+
+        if (repartidores.length === 0) {
+          repBody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No hay repartidores</td></tr>';
+        } else {
+          repartidores.forEach(rep => {
+            const row = `
                         <tr>
                             <td>
                                 <div class="d-flex align-items-center">
@@ -235,14 +247,14 @@
                             <td><span class="badge bg-info bg-opacity-10 text-info border border-info">Repartidor</span></td>
                         </tr>
                     `;
-                    repBody.insertAdjacentHTML('beforeend', row);
-                });
-            }
-
-        } catch (error) {
-            console.error("Error loading users:", error);
-            document.getElementById('dashboard-repartidores-body').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error cargando repartidores</td></tr>';
+            repBody.insertAdjacentHTML('beforeend', row);
+          });
         }
+
+      } catch (error) {
+        console.error("Error loading users:", error);
+        document.getElementById('dashboard-repartidores-body').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error cargando repartidores</td></tr>';
+      }
     }
 
     // Init
@@ -252,4 +264,5 @@
     });
   </script>
 </body>
+
 </html>

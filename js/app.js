@@ -192,3 +192,43 @@ function addNotificationStyles() {
   `;
   document.head.appendChild(style);
 }
+
+// Logic for PWA Installation
+let deferredPrompt;
+
+function checkPWAInstallation() {
+  const installButton = document.getElementById('install-app-button');
+
+  // Verify if button exists before adding listeners
+  if (!installButton) return;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+    // Update UI to notify the user they can add to home screen
+    installButton.style.display = 'block';
+
+    installButton.onclick = () => {
+      // Hide the app provided install promotion
+      installButton.style.display = 'none';
+      // Show the prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        deferredPrompt = null;
+      });
+    };
+  });
+
+  window.addEventListener('appinstalled', (evt) => {
+    console.log('App successfully installed');
+    installButton.style.display = 'none';
+  });
+}
