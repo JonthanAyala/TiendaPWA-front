@@ -158,6 +158,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/TiendaPWA-front/js/offline-manager.js"></script>
     <script src="/TiendaPWA-front/js/api.js"></script>
 
     <script>
@@ -201,9 +202,15 @@
             }
         }
 
+
         async function loadProducts() {
             try {
+                // Intentar cargar desde API
                 allProducts = await ProductAPI.list();
+
+                // Guardar en offline storage para uso posterior
+                await offlineManager.saveProducts(allProducts);
+
                 const prodSelect = document.getElementById('select-producto');
                 prodSelect.innerHTML = '<option value="" disabled selected>Selecciona producto...</option>';
 
@@ -216,9 +223,31 @@
                     }
                 });
             } catch (e) {
-                console.error('Error cargando productos:', e);
+                console.error('Error cargando productos desde API:', e);
+
+                // Si falla, intentar cargar desde IndexedDB (offline)
+                try {
+                    allProducts = await offlineManager.getProducts();
+                    console.log('📦 Productos cargados desde cache offline');
+
+                    const prodSelect = document.getElementById('select-producto');
+                    prodSelect.innerHTML = '<option value="" disabled selected>Selecciona producto (OFFLINE)...</option>';
+
+                    allProducts.forEach(p => {
+                        if (p.stock > 0) {
+                            const opt = document.createElement('option');
+                            opt.value = p.id;
+                            opt.textContent = `${p.name} - $${p.price.toFixed(2)} (Stock: ${p.stock})`;
+                            prodSelect.appendChild(opt);
+                        }
+                    });
+                } catch (offlineError) {
+                    console.error('No hay productos en cache offline:', offlineError);
+                    alert('No se pudieron cargar los productos. Verifica tu conexión.');
+                }
             }
         }
+
 
         function renderUI(store, orders) {
             let ordersHtml = '';
@@ -486,6 +515,7 @@
             };
 
             try {
+                // Intentar guardar online
                 await OrderAPI.create(orderData);
 
                 bootstrap.Modal.getInstance(document.getElementById('pedidoModal')).hide();
@@ -500,8 +530,29 @@
                 });
 
             } catch (error) {
-                console.error(error);
-                alert("Error al guardar pedido: " + (error.message || "Desconocido"));
+                console.error('Error guardando pedido online:', error);
+
+                // Si falla, guardar en modo offline
+                try {
+                    await offlineManager.savePendingOrder(orderData);
+
+                    bootstrap.Modal.getInstance(document.getElementById('pedidoModal')).hide();
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '📴 Pedido Guardado Offline',
+                        html: `
+                            <p>No hay conexión a internet.</p>
+                            <p><strong>El pedido se sincronizará automáticamente cuando vuelva la conexión.</strong></p>
+                        `,
+                        confirmButtonColor: '#f59e0b'
+                    }).then(() => {
+                        window.location.href = '/TiendaPWA-front/pages/repartidor/inicio.html';
+                    });
+                } catch (offlineError) {
+                    console.error('Error guardando offline:', offlineError);
+                    alert("Error crítico: No se pudo guardar el pedido ni online ni offline.");
+                }
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
